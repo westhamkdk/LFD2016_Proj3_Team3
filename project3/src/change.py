@@ -149,7 +149,45 @@ if __name__ == '__main__':
     # type index number to get kibo, position and reward
     print data_loader.get_kibo_pos_value(0)
 
-    #print time.time() - st
+
+
+    
+# def change_kibo_simple(state):
+#
+#     pannel = [[0 for col in range(15)] for row in range(15)]
+#
+#     for a in range(len(state)):
+#         if a % 2 == 0 and state[a] == 1:  # black
+#             pannel[(a/2) / 15][(a/2) % 15] = 1
+#         elif a % 2 == 1 and state[a] == 1:  # white
+#             pannel[(a/2) / 15][(a/2) % 15] = -1
+#
+#     return pannel
+#
+#
+# def get_available_counts(current):
+#     # for test
+#     current =  make_kibo_panel(0)[0]
+#     print current
+#
+#     full_mat = []
+#     pos = []
+#     next_dol = 0
+#     if np.sum(current) == 0:
+#         next_dol = 1
+#     else:
+#         next_dol = -1
+#
+#     for i in range(0,15):
+#         for j in range(0,15):
+#             temp = current.copy()
+#             if temp[i][j] == 0:
+#                 temp[i][j] = next_dol
+#                 full_mat.append(temp)
+#                 pos.append(i*15 + j)
+#     return np.array(full_mat), np.array(pos)
+
+
 
 
 
