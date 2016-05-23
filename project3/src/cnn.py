@@ -3,40 +3,7 @@ __author__ = 'insookyo'
 import tensorflow as tf
 import numpy as np
 import os
-
-
-class DataLoader(object):
-
-    def __init__(self, resize_shape):
-        train_dir = os.path.join(os.path.dirname(__file__), '../data', 'train')
-        self.resize_shape = resize_shape
-        self.xs, self.ys = load_images(train_dir, mode="train", one_hot=True, resize_shape=resize_shape)
-        self.xs, self.ys = self.shuffle_data(self.xs, self.ys)
-        self.data_idx = 0
-
-    def generate_batch(self, batch_size):
-        try:
-            self.xs[self.data_idx+batch_size]
-        except IndexError as e:
-            self.xs, self.ys = self.shuffle_data(self.xs, self.ys)
-            self.data_idx = 0
-
-        batch_x = self.xs[self.data_idx:self.data_idx+batch_size]
-        batch_y = self.ys[self.data_idx:self.data_idx+batch_size]
-        self.data_idx+=batch_size
-
-        return batch_x, batch_y
-
-    def shuffle_data(self, xs, ys):
-        print "shuffle"
-        random_idx = np.random.choice(range(len(xs)), len(xs), replace=False)
-        return xs[random_idx, :], ys[random_idx, :]
-
-    def get_valid_set(self):
-        test_dir = os.path.join(os.path.dirname(__file__), '../data', 'test')
-        valid_xs, valid_ys = load_images(test_dir, mode="valid", one_hot=True, resize_shape=resize_shape)
-        return valid_xs, valid_ys
-
+from change import DataLoader
 
 # Create model
 class CNN(object):
@@ -63,9 +30,9 @@ class CNN(object):
 
     def conv_net(self):
         # Reshape input picture
-        self.x_4d = tf.reshape(self.x, shape=[-1, self.resize_shape, self.resize_shape, 1])
+        # self.x_4d = tf.reshape(self.x, shape=[-1, self.resize_shape, self.resize_shape, 1])
         # Convolution Layer
-        self.conv1 = self.conv2d(self.x_4d, self.wc1, self.bc1)
+        self.conv1 = self.conv2d(self.x, self.wc1, self.bc1)
         # Max Pooling (down-sampling)
         # self.conv1 = self.max_pool(self.conv1, k=2)
 
@@ -93,7 +60,7 @@ class CNN(object):
 
 
         # tf Graph input
-        self.x = tf.placeholder(tf.float32, [None, self.n_input])
+        self.x = tf.placeholder(tf.float32, [None, 15, 15 , 1])
         if self.model_type == "regression":
             self.y = tf.placeholder(tf.float32, [None, 1])
         else:
@@ -142,22 +109,24 @@ class CNN(object):
         print "data is loading..."
         data_loader = DataLoader(self.model_type)
         print "data is loaded"
+
+        epoch = 0
         step = 1
         # Keep training until reach max iterations
-        while step * self.batch_size < self.training_iters:
-            batch_xs, batch_ys =  data_loader.generate_batch(self.batch_size)
+        while epoch < self.training_iters:
+            batch_xs, batch_ys, epoch_over =  data_loader.generate_batch(self.batch_size)
 
             # Fit training using batch data
             self.sess.run(self.optimizer, feed_dict={self.x: batch_xs, self.y: batch_ys})
             if step % self.display_step == 0:
-                print "step : %d (%f%%)" %(step, float(step * self.batch_size)*100/self.training_iters,)
+                print "step : %d " % step
                 # Calculate batch accuracy and loss
                 acc, loss = self.sess.run([accuracy, self.cost], feed_dict={self.x: batch_xs, self.y: batch_ys})
                 print "Iter " + str(step*self.batch_size) + ", Minibatch Loss= " + "{:.6f}".format(loss) + ", Minibatch Accuracy= " + "{:.5f}".format(acc)
             step += 1
-
-            if step % 10 == 0:
-                self.save(step//10)
+            if epoch_over is True:
+                epoch +=1
+                self.save(epoch)
 
         print "Optimization Finished!"
 
@@ -169,26 +138,29 @@ class CNN(object):
         self.saver = tf.train.Saver()
 
         tf.initialize_all_variables().run()
-        tf.train.Saver([self.wc1, self.wc2, self.wd1, self.out, self.bc1, self.bc2, self.bd1, self.bout]).restore(sess, save_path='../models/cnn_classification.model-15')
+        tf.train.Saver([self.wc1, self.wc2, self.wd1, self.out, self.bc1, self.bc2, self.bd1, self.bout]).restore(sess, save_path='../models/cnn_classification.model-1')
         print "data is loading..."
         data_loader = DataLoader(self.model_type)
         print "data is loaded"
+
+        epoch = 0
         step = 1
         # Keep training until reach max iterations
-        while step * self.batch_size < self.training_iters:
-            batch_xs, batch_ys = data_loader.generate_batch(self.batch_size)
+        while epoch < self.training_iters:
+            batch_xs, batch_ys, epoch_over = data_loader.generate_batch(self.batch_size)
 
             # Fit training using batch data
             self.sess.run(self.optimizer, feed_dict={self.x: batch_xs, self.y: batch_ys})
             if step % self.display_step == 0:
-                print "step : %d (%f%%)" % (step, float(step * self.batch_size) * 100 / self.training_iters,)
+                print "step : %d" % step
                 # Calculate batch accuracy and loss
                 loss = self.sess.run(self.cost, feed_dict={self.x: batch_xs, self.y: batch_ys})
                 print "Iter " + str(step * self.batch_size) + ", Minibatch Loss= " + "{:.6f}".format(loss)
             step += 1
 
-            if step % 10 == 0:
-                self.save(step // 10)
+            if epoch_over is True:
+                epoch +=1
+                self.save(epoch)
 
         print "Optimization Finished!"
 
@@ -253,25 +225,38 @@ if __name__ == '__main__':
     import time
     # Parameters
     learning_rate = 0.001
-    training_iters = 1000000
-    batch_size = 128
+    training_iters = 1
+    batch_size = 256
     display_step = 10
 
     # Network Parameters
-    n_input = 64*64 # MNIST data input (img shape: 28*28)
-    n_classes = 62 # MNIST total classes (0-9 digits)
-    dropout = 0.5 # Dropout, probability to keep units
-    resize_shape = 64
+    n_input = 15*15 # MNIST data input (img shape: 28*28)
+    n_classes = 225 # MNIST total classes (0-9 digits)
 
     is_train = True
+    model_type = "classification"
+    # model_type = "regression"
 
-    with tf.Session() as sess:
-        cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes, dropout, resize_shape)
+    if model_type =="classification":
+        with tf.Session() as sess:
+            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes, model_type=model_type)
 
-        if is_train is True:
-            start_time = time.time()
-            cnn.train()
-            print("--- %s seconds ---" % (time.time() - start_time))
-            print("--- %s min ---" % ((time.time() - start_time)/float(60)))
-        else:
-            cnn.calculate_error()
+            if is_train is True:
+                start_time = time.time()
+                cnn.train_classification()
+                print("--- %s seconds ---" % (time.time() - start_time))
+                print("--- %s min ---" % ((time.time() - start_time)/float(60)))
+            else:
+                cnn.calculate_error()
+    else:
+        with tf.Session() as sess:
+            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
+                      model_type=model_type)
+
+            if is_train is True:
+                start_time = time.time()
+                cnn.train_classification()
+                print("--- %s seconds ---" % (time.time() - start_time))
+                print("--- %s min ---" % ((time.time() - start_time) / float(60)))
+            else:
+                cnn.calculate_error()

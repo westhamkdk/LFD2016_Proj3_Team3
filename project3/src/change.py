@@ -10,77 +10,144 @@ import cPickle
 
 import utility
 
+class DataLoader(object):
+    def __init__(self, model_type):
+        self.load_episodes()
+        self.episode_size = len(self.episodes)
+        self.preload_episode_size = 2000
+        self.current_episode_id = 0
+        self.preload_kibo = None
+        self.preload_pos = None
+        self.preload_reward = None
+        self.data_idx = 0
+        self.preload_dataset()
+        self.model_type = model_type
+        print self.episode_size
 
-def cal_action_num(temp):
-    cal = temp[0] * 15 + temp[1]
-    return cal
+    def load_episodes(self):
+        file_path = '../data/renjunet_v10_20160425.rif'
+        st = time.time()
+        try:
+            with open('../data/episodes.p', 'rb') as handle:
+                print "pickle loaded"
+                self.episodes = cPickle.load(handle)
+        except Exception as e:
+            print e
+            print "failed to load episodes"
+            self.episodes = utility.read_gomoku(file_path)
 
-def make_reward_table(epi_num):
-    epi = episodes[epi_num]
-    reward = []
+            with open('../data/episodes.p', 'wb') as handle:
+                cPickle.dump(self.episodes, handle)
+        print time.time() - st
 
-    for b in range(epi['reward'].size-1):
-        reward.append(epi.values[b][5])
+    def preload_dataset(self):
+        for eposide_id in range(self.current_episode_id,
+                                max(self.current_episode_id + self.preload_episode_size, self.episode_size)):
+            if self.preload_kibo is None:
+                self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
+            else:
+                kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
+                self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
+                self.preload_pos = np.concatenate((self.preload_pos, pos))
+                self.preload_reward = np.concatenate((self.preload_reward, reward))
+        self.current_episode_id += self.preload_episode_size
+        if self.current_episode_id >=self.episode_size:
+            self.current_episode_id = 0
 
-    return np.array(reward)
+        self.preload_kibo = np.reshape(self.preload_kibo (self.preload_kibo.shape[0], 15, 15, 1))
+        temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
+        temp_pos[:, self.preload_pos] = 1
+        self.preload_pos = temp_pos
+        print self.preload_kibo
+        print self.preload_pos
+        print self.preload_reward
 
-def make_pos_table(epi_num):  # 0~14
-    pos = []
-    epi = episodes[epi_num]
+        self.preload_kibo, self.preload_pos, self.preload_reward \
+        = self.shuffle_data(self.preload_kibo, self.preload_pos, self.preload_reward)
+        assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
 
-    for a in range(epi['action'].size-1):
-        temp = epi.values[a+1][4]
-        cal = cal_action_num(temp)
-        pos.append(cal)
-    return np.array(pos)
 
-def make_kibo_panel(epi_num):
+    def generate_batch(self, batch_size):
+        epoch_over = False
+        try:
+            self.preload_kibo[self.data_idx + batch_size]
+        except IndexError as e:
+            self.preload_dataset()
+            self.data_idx = 0
+            epoch_over = True
 
-    epi = episodes[epi_num]
+        if self.model_type == "classification":
+            batch_x = self.preload_kibo[self.data_idx:self.data_idx + batch_size]
+            batch_y = self.preload_pos[self.data_idx:self.data_idx + batch_size]
+        else:
+            batch_x = self.preload_kibo[self.data_idx:self.data_idx + batch_size]
+            batch_y = self.preload_reward[self.data_idx:self.data_idx + batch_size]
 
-    new_dict = dict()
-    temp = [[0 for col in range(15)] for row in range(15)]
+        self.data_idx += batch_size
 
-    full_mat = []
-    for a in range(epi['action'].size-1):
+        return batch_x, batch_y, epoch_over
 
-        cal = epi.values[a][4]
+    def shuffle_data(self, xs, ys, zs):
+        print "shuffle"
+        random_idx = np.random.choice(range(len(xs)), len(xs), replace=False)
+        return xs[random_idx, :], ys[random_idx, :], zs[random_idx, :]
 
-        if a % 2 == 0:
-            temp[cal[0]][cal[1]] = 1
-        elif a % 2 == 1:
-            temp[cal[0]][cal[1]] = -1
 
-        df = pd.DataFrame(temp)
-        new_dict[a] = df
-        full_mat.append(temp)
+    def cal_action_num(self, temp):
+        cal = temp[0] * 15 + temp[1]
+        return cal
 
-    print np.array(full_mat)
-    return np.array(full_mat)
+    def make_reward_table(self, epi_num):
+        epi = self.episodes[epi_num]
+        reward = []
 
-def get_kibo_pos_value(epi_num):
-    return make_kibo_panel(epi_num), make_pos_table(epi_num), make_reward_table(epi_num)
+        for b in range(epi['reward'].size-1):
+            reward.append(epi.values[b][5])
+
+        return np.array(reward)
+
+    def make_pos_table(self, epi_num):  # 0~14
+        pos = []
+        epi = self.episodes[epi_num]
+
+        for a in range(epi['action'].size-1):
+            temp = epi.values[a+1][4]
+            cal = self.cal_action_num(temp)
+            pos.append(cal)
+        return np.array(pos)
+
+    def make_kibo_panel(self, epi_num):
+
+        epi = self.episodes[epi_num]
+
+        new_dict = dict()
+        temp = [[0 for col in range(15)] for row in range(15)]
+
+        full_mat = []
+        for a in range(epi['action'].size-1):
+
+            cal = epi.values[a][4]
+
+            if a % 2 == 0:
+                temp[cal[0]][cal[1]] = 1
+            elif a % 2 == 1:
+                temp[cal[0]][cal[1]] = -1
+
+            df = pd.DataFrame(temp)
+            new_dict[a] = df
+            full_mat.append(temp)
+
+        print np.array(full_mat)
+        return np.array(full_mat)
+
+    def get_kibo_pos_value(self, epi_num):
+        return self.make_kibo_panel(epi_num), self.make_pos_table(epi_num), self.make_reward_table(epi_num)
 
 if __name__ == '__main__':
-    file_path = '../data/renjunet_v10_20160425.rif'
-    st = time.time()
-
-    # episodes' index are sequential
-    try:
-        with open('../data/episodes.p', 'rb') as handle:
-            print "pickle loaded"
-            episodes = cPickle.load(handle)
-    except Exception as e:
-        print e
-        print "failed to load episodes"
-        episodes = utility.read_gomoku(file_path)
-
-        with open('../data/episodes.p', 'wb') as handle:
-            cPickle.dump(episodes, handle)
-
+    data_loader = DataLoader()
 
     # type index number to get kibo, position and reward
-    print get_kibo_pos_value(0)
+    print data_loader.get_kibo_pos_value(0)
 
     #print time.time() - st
 

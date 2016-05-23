@@ -20,10 +20,17 @@ class n_Q_gomoku_player(GomokuPlayer):
         """
         ba = self.game.getBoardArray()
         state = self.game.invertBoardArray(ba)
+        print "---------------"
+        print self.color
+        print state.sum()
+        print state[::2].sum()
+        print state[1::2].sum()
+        print state
 
 
-        action = self.module.getMaxAction()
+        # action = self.module.getMaxAction()
 
+        action = (0,0)
         if self.game.isLegal(self.color, action):
             return [self.color, action]
         else:
