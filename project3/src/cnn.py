@@ -43,7 +43,7 @@ class CNN(object):
         # self.conv2 = self.max_pool(self.conv2, k=2)
 
         # Fully connected layer
-        self.dense1 = tf.reshape(self.conv3, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
+        self.dense1 = tf.reshape(self.conv2, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
         self.dense1 = tf.nn.relu(tf.add(tf.matmul(self.dense1, self.wd1), self.bd1)) # Relu activation
 
         # Output, class prediction
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     import time
     # Parameters
     learning_rate = 0.001
-    training_iters = 1
+    training_iters = 10
     batch_size = 256
     display_step = 10
 

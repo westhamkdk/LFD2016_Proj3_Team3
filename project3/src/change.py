@@ -31,6 +31,7 @@ class DataLoader(object):
             with open('../data/episodes.p', 'rb') as handle:
                 print "pickle loaded"
                 self.episodes = cPickle.load(handle)
+                print "pickle loading complete"
         except Exception as e:
             print e
             print "failed to load episodes"
@@ -41,8 +42,10 @@ class DataLoader(object):
         print time.time() - st
 
     def preload_dataset(self):
+        self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
+
         for eposide_id in range(self.current_episode_id,
-                                max(self.current_episode_id + self.preload_episode_size, self.episode_size)):
+                                min(self.current_episode_id + self.preload_episode_size, self.episode_size)):
             if self.preload_kibo is None:
                 self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
             else:
@@ -54,13 +57,11 @@ class DataLoader(object):
         if self.current_episode_id >=self.episode_size:
             self.current_episode_id = 0
 
-        self.preload_kibo = np.reshape(self.preload_kibo (self.preload_kibo.shape[0], 15, 15, 1))
+        self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
         temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
         temp_pos[:, self.preload_pos] = 1
         self.preload_pos = temp_pos
-        print self.preload_kibo
-        print self.preload_pos
-        print self.preload_reward
+        self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
 
         self.preload_kibo, self.preload_pos, self.preload_reward \
         = self.shuffle_data(self.preload_kibo, self.preload_pos, self.preload_reward)
@@ -72,6 +73,7 @@ class DataLoader(object):
         try:
             self.preload_kibo[self.data_idx + batch_size]
         except IndexError as e:
+            print "indexError"
             self.preload_dataset()
             self.data_idx = 0
             epoch_over = True
@@ -137,17 +139,16 @@ class DataLoader(object):
             new_dict[a] = df
             full_mat.append(temp)
 
-        print np.array(full_mat)
         return np.array(full_mat)
 
     def get_kibo_pos_value(self, epi_num):
         return self.make_kibo_panel(epi_num), self.make_pos_table(epi_num), self.make_reward_table(epi_num)
 
 if __name__ == '__main__':
-    data_loader = DataLoader()
+    data_loader = DataLoader(model_type="classification")
 
     # type index number to get kibo, position and reward
-    print data_loader.get_kibo_pos_value(0)
+    # print data_loader.get_kibo_pos_value(0)
 
 
 
