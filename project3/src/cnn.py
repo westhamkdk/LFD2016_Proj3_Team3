@@ -22,7 +22,7 @@ class CNN(object):
 
 
     def conv2d(self, img, w, b):
-        return tf.nn.relu(tf.nn.bias_add(tf.nn.conv2d(img, w, strides=[1, 1, 1, 1], padding='SAME'),b))
+        return tf.nn.tanh(tf.nn.bias_add(tf.nn.conv2d(img, w, strides=[1, 1, 1, 1], padding='SAME'),b))
 
 
     def max_pool(self, img, k):
@@ -44,13 +44,13 @@ class CNN(object):
 
         # Fully connected layer
         self.dense1 = tf.reshape(self.conv2, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
-        self.dense1 = tf.nn.relu(tf.add(tf.matmul(self.dense1, self.wd1), self.bd1)) # Relu activation
+        self.dense1 = tf.nn.tanh(tf.add(tf.matmul(self.dense1, self.wd1), self.bd1)) # Relu activation
 
         # Output, class prediction
         out = tf.add(tf.matmul(self.dense1, self.out), self.bout)
 
         if self.model_type == "regression":
-            out = tf.add(tf.matmul(out, self.regout), self.bregout)
+            out = tf.add(tf.matmul(tf.nn.tanh(out), self.regout), self.bregout)
 
         return out
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     import time
     # Parameters
     learning_rate = 0.001
-    training_iters = 20
+    training_iters = 50
     batch_size = 256
     display_step = 10
 
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     # model_type = "regression"
 
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
 
     if model_type =="classification":
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:

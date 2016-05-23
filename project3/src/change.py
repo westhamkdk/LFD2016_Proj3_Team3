@@ -14,11 +14,8 @@ class DataLoader(object):
     def __init__(self, model_type):
         self.load_episodes()
         self.episode_size = len(self.episodes)
-        self.preload_episode_size = 1000
+        self.preload_episode_size = 5000
         self.current_episode_id = 0
-        self.preload_kibo = None
-        self.preload_pos = None
-        self.preload_reward = None
         self.data_idx = 0
         self.preload_dataset()
         self.model_type = model_type
@@ -50,6 +47,7 @@ class DataLoader(object):
                 self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
             else:
                 kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
+                print "kibo is none, episodo id : ", str(eposide_id), "/", str(self.episode_size)
                 self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
                 self.preload_pos = np.concatenate((self.preload_pos, pos))
                 self.preload_reward = np.concatenate((self.preload_reward, reward))
