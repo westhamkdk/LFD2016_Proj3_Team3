@@ -25,7 +25,8 @@ def read_gomoku(file_path):
 
             episode = gen_episode(result, sequence, idx)
             episodes.append(episode)
-
+            if idx == 2:
+                break
             idx += 1
 
     return episodes

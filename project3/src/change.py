@@ -61,6 +61,30 @@ def make_kibo_panel(epi_num):
 def get_kibo_pos_value(epi_num):
     return make_kibo_panel(epi_num), make_pos_table(epi_num), make_reward_table(epi_num)
 
+
+def get_available_counts(current):
+    # for test
+    # current =  make_kibo_panel(0)[0]
+    print current
+
+    full_mat = []
+    pos = []
+    next_dol = 0
+    if np.sum(current) == 0:
+        next_dol = 1
+    else:
+        next_dol = -1
+
+    for i in range(0,15):
+        for j in range(0,15):
+            temp = current.copy()
+            if temp[i][j] == 0:
+                temp[i][j] = next_dol
+                full_mat.append(temp)
+                pos.append(i*15 + j)
+    return np.array(full_mat), np.array(pos)
+
+
 if __name__ == '__main__':
     file_path = '../data/renjunet_v10_20160425.rif'
     st = time.time()
@@ -70,6 +94,7 @@ if __name__ == '__main__':
         with open('../data/episodes.p', 'rb') as handle:
             print "pickle loaded"
             episodes = cPickle.load(handle)
+            print "load complete"
     except Exception as e:
         print e
         print "failed to load episodes"
@@ -78,10 +103,9 @@ if __name__ == '__main__':
         with open('../data/episodes.p', 'wb') as handle:
             cPickle.dump(episodes, handle)
 
-
     # type index number to get kibo, position and reward
-    print get_kibo_pos_value(0)
-
+    # print get_kibo_pos_value(0)
+    get_available_counts(0)
     #print time.time() - st
 
 
