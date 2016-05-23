@@ -60,6 +60,18 @@ def make_kibo_panel(epi_num):
 
 def get_kibo_pos_value(epi_num):
     return make_kibo_panel(epi_num), make_pos_table(epi_num), make_reward_table(epi_num)
+    
+def change_kibo_simple(state):
+
+    pannel = [[0 for col in range(15)] for row in range(15)]
+
+    for a in range(len(state)):
+        if a % 2 == 0 and state[a] == 1:  # black
+            pannel[(a/2) / 15][(a/2) % 15] = 1
+        elif a % 2 == 1 and state[a] == 1:  # white
+            pannel[(a/2) / 15][(a/2) % 15] = -1
+
+    return pannel
 
 
 def get_available_counts(current):
