@@ -6,6 +6,7 @@ import pandas as pd
 from pybrain.rl.environments.twoplayergames.gomoku import GomokuGame
 from lxml import etree
 import pickle
+import cPickle
 
 import utility
 
@@ -18,7 +19,7 @@ def make_reward_table(epi_num):
     epi = episodes[epi_num]
     reward = []
 
-    for b in range(epi['reward'].size):
+    for b in range(epi['reward'].size-1):
         reward.append(epi.values[b][5])
 
     return np.array(reward)
@@ -27,8 +28,8 @@ def make_pos_table(epi_num):  # 0~14
     pos = []
     epi = episodes[epi_num]
 
-    for a in range(epi['action'].size):
-        temp = epi.values[a][4]
+    for a in range(epi['action'].size-1):
+        temp = epi.values[a+1][4]
         cal = cal_action_num(temp)
         pos.append(cal)
     return np.array(pos)
@@ -37,13 +38,11 @@ def make_kibo_panel(epi_num):
 
     epi = episodes[epi_num]
 
-    panel = pd.Panel({})
     new_dict = dict()
-    matrix = [[[0 for col in range(15)] for row in range(15)] for dim in range(epi['action'].size)]
     temp = [[0 for col in range(15)] for row in range(15)]
 
     full_mat = []
-    for a in range(epi['action'].size):
+    for a in range(epi['action'].size-1):
 
         cal = epi.values[a][4]
 
@@ -56,7 +55,6 @@ def make_kibo_panel(epi_num):
         new_dict[a] = df
         full_mat.append(temp)
 
-    panel = pd.Panel(data=new_dict)
     print np.array(full_mat)
     return np.array(full_mat)
 
@@ -72,13 +70,18 @@ if __name__ == '__main__':
         with open('../data/episodes.p', 'rb') as handle:
             print "pickle loaded"
             episodes = pickle.load(handle)
-    except:
+    except Exception as e:
+        print e
         print "failed to load episodes"
         episodes = utility.read_gomoku(file_path)
 
 
-    with open('../data/episodes.p', 'wb') as handle:
-        pickle.dump(episodes, handle)
+        with open('../data/episodes.p', 'wb') as handle:
+            pickle.dump(episodes, handle)
+
+    with open('../data/episodes_cpickle.p', 'wb') as handle:
+        print "pickle loaded"
+        cPickle.dump(episodes, handle)
 
     # type index number to get kibo, position and reward
     print get_kibo_pos_value(0)
