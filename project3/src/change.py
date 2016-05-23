@@ -48,7 +48,13 @@ class DataLoader(object):
             else:
                 kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
                 print "kibo is none, episodo id : ", str(eposide_id), "/", str(self.episode_size)
-                self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
+                try:
+                    self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
+                except Exception as e:
+                    print e
+                    print self.preload_kibo
+                    print kibo
+
                 self.preload_pos = np.concatenate((self.preload_pos, pos))
                 self.preload_reward = np.concatenate((self.preload_reward, reward))
         self.current_episode_id += self.preload_episode_size
