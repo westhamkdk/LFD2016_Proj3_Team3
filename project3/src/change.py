@@ -41,8 +41,8 @@ class DataLoader(object):
     def preload_dataset(self):
         try:
             self.preload_kibo = np.load('../data/kibo.npy')
-            self.preload_pos = np.load('../data/pos')
-            self.preload_reward = np.load('../data/reward')
+            self.preload_pos = np.load('../data/pos.npy')
+            self.preload_reward = np.load('../data/reward.npy')
         except Exception as e:
             print e
             self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
