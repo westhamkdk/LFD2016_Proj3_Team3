@@ -66,7 +66,6 @@ class CNN(object):
         else:
             self.y = tf.placeholder(tf.float32, [None, self.n_classes])
 
-        self.keep_prob = tf.placeholder(tf.float32) #dropout (keep probability)
         # Store layers weight & bias
         self.wc1 = tf.Variable(tf.random_normal([3, 3, 1, filter_size[0]]), name='wc1') # 5x5 conv, 1 input, 32 outputs
         self.wc2 = tf.Variable(tf.random_normal([3, 3, filter_size[0], filter_size[1]]), name='wc2') # 5x5 conv, 32 inputs, 64 outputs
@@ -138,7 +137,8 @@ class CNN(object):
         self.saver = tf.train.Saver()
 
         tf.initialize_all_variables().run()
-        tf.train.Saver([self.wc1, self.wc2, self.wd1, self.out, self.bc1, self.bc2, self.bd1, self.bout]).restore(sess, save_path='../models/cnn_classification.model-1')
+        tf.train.Saver([self.wc1, self.wc2, self.wd1, self.out, self.bc1, self.bc2, self.bd1, self.bout]).restore(sess, \
+         save_path='assets/cnn_classification.model-7')
         print "data is loading..."
         data_loader = DataLoader(self.model_type)
         print "data is loaded"
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     import time
     # Parameters
     learning_rate = 0.001
-    training_iters = 10
+    training_iters = 20
     batch_size = 256
     display_step = 10
 
@@ -237,8 +237,11 @@ if __name__ == '__main__':
     model_type = "classification"
     # model_type = "regression"
 
+
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+
     if model_type =="classification":
-        with tf.Session() as sess:
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes, model_type=model_type)
 
             if is_train is True:
@@ -249,13 +252,13 @@ if __name__ == '__main__':
             else:
                 cnn.calculate_error()
     else:
-        with tf.Session() as sess:
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
                       model_type=model_type)
 
             if is_train is True:
                 start_time = time.time()
-                cnn.train_classification()
+                cnn.train_regression()
                 print("--- %s seconds ---" % (time.time() - start_time))
                 print("--- %s min ---" % ((time.time() - start_time) / float(60)))
             else:

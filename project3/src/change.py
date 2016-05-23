@@ -14,7 +14,7 @@ class DataLoader(object):
     def __init__(self, model_type):
         self.load_episodes()
         self.episode_size = len(self.episodes)
-        self.preload_episode_size = 2000
+        self.preload_episode_size = 1000
         self.current_episode_id = 0
         self.preload_kibo = None
         self.preload_pos = None
