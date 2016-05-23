@@ -225,7 +225,7 @@ if __name__ == '__main__':
     import time
     # Parameters
     learning_rate = 0.001
-    training_iters = 30
+    training_iters = 50
     batch_size = 256
     display_step = 10
 

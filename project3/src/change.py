@@ -39,40 +39,45 @@ class DataLoader(object):
         print time.time() - st
 
     def preload_dataset(self):
-        self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
+        try:
+            self.preload_kibo = np.load('../data/kibo.npy')
+            self.preload_pos = np.load('../data/pos')
+            self.preload_reward = np.load('../data/reward')
+        except Exception as e:
+            print e
+            self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
 
-        for eposide_id in range(self.current_episode_id,
-                                min(self.current_episode_id + self.preload_episode_size, self.episode_size)):
-            if self.preload_kibo is None:
-                self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
-            else:
-                kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
-                print "episodo id : ", str(eposide_id), "/", str(self.episode_size)
-                try:
-                    self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
-                    self.preload_pos = np.concatenate((self.preload_pos, pos))
-                    self.preload_reward = np.concatenate((self.preload_reward, reward))
-                except Exception as e:
-                    print e
-                    print self.preload_kibo
-                    print kibo
+            for eposide_id in range(self.current_episode_id,
+                                    min(self.current_episode_id + self.preload_episode_size, self.episode_size)):
+                if self.preload_kibo is None:
+                    self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
+                else:
+                    kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
+                    if eposide_id // 50 == 0:
+                        print "episodo id : ", str(eposide_id), "/", str(self.episode_size)
+                    try:
+                        self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
+                        self.preload_pos = np.concatenate((self.preload_pos, pos))
+                        self.preload_reward = np.concatenate((self.preload_reward, reward))
+                    except Exception as e:
+                        print e
+                        print self.preload_kibo
+                        print kibo
 
-        self.current_episode_id += self.preload_episode_size
-        if self.current_episode_id >=self.episode_size:
-            self.current_episode_id = 0
+            self.current_episode_id += self.preload_episode_size
+            if self.current_episode_id >=self.episode_size:
+                self.current_episode_id = 0
 
-        self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
-        temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
-        temp_pos[:, self.preload_pos] = 1
-        self.preload_pos = temp_pos
-        self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
+            self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
+            temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
+            temp_pos[:, self.preload_pos] = 1
+            self.preload_pos = temp_pos
+            self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
 
-        self.preload_kibo, self.preload_pos, self.preload_reward \
-        = self.shuffle_data(self.preload_kibo, self.preload_pos, self.preload_reward)
-        assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
-        np.save('../data/kibo', self.preload_kibo)
-        np.save('../data/pos', self.preload_pos)
-        np.save('../data/reward',self.preload_reward)
+            assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
+            np.save('../data/kibo', self.preload_kibo)
+            np.save('../data/pos', self.preload_pos)
+            np.save('../data/reward',self.preload_reward)
 
     def generate_batch(self, batch_size):
         epoch_over = False
@@ -80,7 +85,7 @@ class DataLoader(object):
             self.preload_kibo[self.data_idx + batch_size]
         except IndexError as e:
             print "indexError"
-            self.preload_dataset()
+            self.shuffle_data()
             self.data_idx = 0
             epoch_over = True
 
@@ -95,11 +100,12 @@ class DataLoader(object):
 
         return batch_x, batch_y, epoch_over
 
-    def shuffle_data(self, xs, ys, zs):
+    def shuffle_data(self):
         print "shuffle"
-        random_idx = np.random.choice(range(len(xs)), len(xs), replace=False)
-        return xs[random_idx, :], ys[random_idx, :], zs[random_idx, :]
-
+        random_idx = np.random.choice(range(len(self.preload_kibo)), len(self.preload_kibo), replace=False)
+        self.preload_kibo = self.preload_kibo[random_idx, :]
+        self.preload_pos = self.preload_pos[random_idx, :]
+        self.preload_reward = self.preload_reward[random_idx, :]
 
     def cal_action_num(self, temp):
         cal = temp[0] * 15 + temp[1]
