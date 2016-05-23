@@ -55,12 +55,12 @@ class CNN(object):
         return out
 
     def build_graph(self):
-        filter_size =[16, 32]
+        filter_size =[32, 64]
         fc_size = 1024
 
 
         # tf Graph input
-        self.x = tf.placeholder(tf.float32, [None, 15, 15 , 1])
+        self.x = tf.placeholder(tf.float32, [None, 15, 15, 1])
         if self.model_type == "regression":
             self.y = tf.placeholder(tf.float32, [None, 1])
         else:
