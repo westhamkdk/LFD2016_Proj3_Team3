@@ -2,7 +2,7 @@ import time
 import numpy as np
 from scipy import zeros
 import pandas as pd
-
+import copy
 from pybrain.rl.environments.twoplayergames.gomoku import GomokuGame
 from lxml import etree
 import pickle
@@ -14,7 +14,7 @@ class DataLoader(object):
     def __init__(self, model_type):
         self.load_episodes()
         self.episode_size = len(self.episodes)
-        self.preload_episode_size = 5000
+        self.preload_episode_size = self.episode_size 
         self.current_episode_id = 0
         self.data_idx = 0
         self.preload_dataset()
@@ -47,16 +47,16 @@ class DataLoader(object):
                 self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
             else:
                 kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
-                print "kibo is none, episodo id : ", str(eposide_id), "/", str(self.episode_size)
+                print "episodo id : ", str(eposide_id), "/", str(self.episode_size)
                 try:
                     self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
+                    self.preload_pos = np.concatenate((self.preload_pos, pos))
+                    self.preload_reward = np.concatenate((self.preload_reward, reward))
                 except Exception as e:
                     print e
                     print self.preload_kibo
                     print kibo
 
-                self.preload_pos = np.concatenate((self.preload_pos, pos))
-                self.preload_reward = np.concatenate((self.preload_reward, reward))
         self.current_episode_id += self.preload_episode_size
         if self.current_episode_id >=self.episode_size:
             self.current_episode_id = 0
@@ -70,7 +70,9 @@ class DataLoader(object):
         self.preload_kibo, self.preload_pos, self.preload_reward \
         = self.shuffle_data(self.preload_kibo, self.preload_pos, self.preload_reward)
         assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
-
+        np.save('../data/kibo', self.preload_kibo)
+        np.save('../data/pos', self.preload_pos)
+        np.save('../data/reward',self.preload_reward)
 
     def generate_batch(self, batch_size):
         epoch_over = False
@@ -141,7 +143,7 @@ class DataLoader(object):
 
             df = pd.DataFrame(temp)
             new_dict[a] = df
-            full_mat.append(temp)
+            full_mat.append(copy.deepcopy(temp))
 
         return np.array(full_mat)
 

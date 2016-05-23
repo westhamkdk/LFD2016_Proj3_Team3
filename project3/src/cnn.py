@@ -225,7 +225,7 @@ if __name__ == '__main__':
     import time
     # Parameters
     learning_rate = 0.001
-    training_iters = 50
+    training_iters = 30
     batch_size = 256
     display_step = 10
 
@@ -241,7 +241,8 @@ if __name__ == '__main__':
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
 
     if model_type =="classification":
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        #        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        with tf.Session() as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes, model_type=model_type)
 
             if is_train is True:
