@@ -67,21 +67,20 @@ if __name__ == '__main__':
 
     # episodes' index are sequential
     try:
-        with open('../data/episodes.p', 'rb') as handle:
-            print "pickle loaded"
-            episodes = pickle.load(handle)
+        print "pickle is loading..."
+        nd_episodes = np.load('../data/episode.np.npy')
+        print "pickle loaded"
     except Exception as e:
         print e
         print "failed to load episodes"
         episodes = utility.read_gomoku(file_path)
 
+        nd_episodes = np.asarray(episodes)
+        np.save('../data/episode.np', nd_episodes)
 
-        with open('../data/episodes.p', 'wb') as handle:
-            pickle.dump(episodes, handle)
-
-    with open('../data/episodes_cpickle.p', 'wb') as handle:
-        print "pickle loaded"
-        cPickle.dump(episodes, handle)
+    # with open('../data/episodes_cpickle.p', 'wb') as handle:
+    #     print "pickle loaded"
+    #     cPickle.dump(episodes, handle)
 
     # type index number to get kibo, position and reward
     print get_kibo_pos_value(0)
