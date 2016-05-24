@@ -238,7 +238,7 @@ if __name__ == '__main__':
     # model_type = "regression"
 
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
 
     if model_type =="classification":
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
