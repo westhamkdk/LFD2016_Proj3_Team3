@@ -45,6 +45,8 @@ class CNN(object):
         self.conv3 = self.conv2d(self.conv2, self.wc3, self.bc3)
         self.conv4 = self.conv2d(self.conv3, self.wc4, self.bc4)
         self.conv5 = self.conv2d(self.conv4, self.wc5, self.bc5)
+        self.conv5 = self.max_pool(self.conv5, k=2)
+
 
         # Fully connected layer
         self.dense1 = tf.reshape(self.conv5, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
@@ -79,7 +81,7 @@ class CNN(object):
         self.wc5 = tf.Variable(tf.random_normal([5, 5, filter_size[3], filter_size[4]]),
                                name='wc5')  # 5x5 conv, 32 inputs, 64 outputs
 
-        self.wd1 = tf.Variable(tf.random_normal([15*15*filter_size[-1], fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
+        self.wd1 = tf.Variable(tf.random_normal([15*15*filter_size[-1]/4, fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
         self.out = tf.Variable(tf.random_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
 
         if self.model_type == 'regression':
