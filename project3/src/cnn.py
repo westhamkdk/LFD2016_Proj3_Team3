@@ -256,14 +256,14 @@ if __name__ == '__main__':
     n_classes = 225 # MNIST total classes (0-9 digits)
 
     is_train = True
-#    model_type = "classification"
-    model_type = "regression"
+    model_type = "classification"
+#    model_type = "regression"
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
 
     if model_type =="classification":
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-            #        with tf.Session() as sess:
+        # with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        with tf.Session() as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes, model_type=model_type)
 
             if is_train is True:
