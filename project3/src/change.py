@@ -30,6 +30,7 @@ class DataLoader(object):
                 print "pickle loaded"
                 self.episodes = cPickle.load(handle)
                 print "pickle loading complete"
+                print np.sum(self.episodes, axis=0)
         except Exception as e:
             print e
             print "failed to load episodes"
@@ -42,6 +43,7 @@ class DataLoader(object):
     def preload_dataset(self):
         if self.file_idx <= 9:
             self.preload_kibo = np.load('../data/kibo_%d.npy' %self.file_idx)
+            self.preload_kibo = -self.preload_kibo
             self.preload_pos = np.load('../data/pos_%d.npy' %self.file_idx)
             self.preload_reward = np.load('../data/reward_%d.npy' %self.file_idx)
 
