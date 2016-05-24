@@ -55,7 +55,7 @@ class CNN(object):
         out = tf.add(tf.matmul(self.dense1, self.out), self.bout)
 
         if self.model_type == "regression":
-            out = tf.add(tf.matmul(self.dense1, self.regout), self.bregout)
+            out = tf.add(tf.matmul(tf.nn.tanh(out), self.regout), self.bregout)
 
         return out
 
@@ -82,7 +82,7 @@ class CNN(object):
         self.out = tf.Variable(tf.random_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
 
         if self.model_type == 'regression':
-            self.regout = tf.Variable(tf.random_normal([fc_size, 1]), name='regout')
+            self.regout = tf.Variable(tf.random_normal([self.n_classes, 1]), name='regout')
 
         self.bc1 = tf.Variable(tf.random_normal([filter_size[0]]), name='bc1')
         self.bc2 = tf.Variable(tf.random_normal([filter_size[1]]), name='bc2')
