@@ -42,8 +42,11 @@ class CNN(object):
         # Max Pooling (down-sampling)
         # self.conv2 = self.max_pool(self.conv2, k=2)
 
+        self.conv3 = self.conv2d(self.conv2, self.wc3, self.bc3)
+
+
         # Fully connected layer
-        self.dense1 = tf.reshape(self.conv2, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
+        self.dense1 = tf.reshape(self.conv3, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
         self.dense1 = tf.nn.tanh(tf.add(tf.matmul(self.dense1, self.wd1), self.bd1)) # Relu activation
 
         # Output, class prediction
@@ -55,7 +58,7 @@ class CNN(object):
         return out
 
     def build_graph(self):
-        filter_size =[32, 64]
+        filter_size =[16, 32, 64]
         fc_size = 1024
 
 
@@ -69,6 +72,8 @@ class CNN(object):
         # Store layers weight & bias
         self.wc1 = tf.Variable(tf.random_normal([3, 3, 1, filter_size[0]]), name='wc1') # 5x5 conv, 1 input, 32 outputs
         self.wc2 = tf.Variable(tf.random_normal([3, 3, filter_size[0], filter_size[1]]), name='wc2') # 5x5 conv, 32 inputs, 64 outputs
+        self.wc3 = tf.Variable(tf.random_normal([3, 3, filter_size[1], filter_size[2]]), name='wc3') # 5x5 conv, 32 inputs, 64 outputs
+
         self.wd1 = tf.Variable(tf.random_normal([15*15*filter_size[-1], fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
         self.out = tf.Variable(tf.random_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
 
@@ -78,6 +83,8 @@ class CNN(object):
 
         self.bc1 = tf.Variable(tf.random_normal([filter_size[0]]), name='bc1')
         self.bc2 = tf.Variable(tf.random_normal([filter_size[1]]), name='bc2')
+        self.bc3 = tf.Variable(tf.random_normal([filter_size[2]]), name='bc3')
+
         self.bd1 = tf.Variable(tf.random_normal([fc_size]), name='bd1')
         self.bout = tf.Variable(tf.random_normal([self.n_classes]), name='bout')
 
@@ -137,7 +144,7 @@ class CNN(object):
         self.saver = tf.train.Saver()
 
         tf.initialize_all_variables().run()
-        tf.train.Saver([self.wc1, self.wc2, self.wd1, self.out, self.bc1, self.bc2, self.bd1, self.bout]).restore(sess, \
+        tf.train.Saver([self.wc1, self.wc2, self.wc3, self.wd1, self.out, self.bc1, self.bc2, self.bc3, self.bd1, self.bout]).restore(sess, \
          save_path='assets/cnn_classification.model-1')
         print "data is loading..."
         data_loader = DataLoader(self.model_type)
@@ -235,7 +242,7 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.005
+    learning_rate = 0.001
     training_iters = 100
     batch_size = 128
     display_step = 50
