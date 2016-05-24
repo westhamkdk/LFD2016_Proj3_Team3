@@ -44,12 +44,11 @@ class CNN(object):
 
         self.conv3 = self.conv2d(self.conv2, self.wc3, self.bc3)
         self.conv4 = self.conv2d(self.conv3, self.wc4, self.bc4)
-        self.conv5 = self.conv2d(self.conv4, self.wc5, self.bc5)
-        self.conv5 = self.max_pool(self.conv5, k=2)
+        self.conv4 = self.max_pool(self.conv4, k=2)
 
 
         # Fully connected layer
-        self.dense1 = tf.reshape(self.conv5, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
+        self.dense1 = tf.reshape(self.conv4, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
         self.dense1 = tf.nn.tanh(tf.add(tf.matmul(self.dense1, self.wd1), self.bd1)) # Relu activation
 
         # Output, class prediction
@@ -61,8 +60,8 @@ class CNN(object):
         return out
 
     def build_graph(self):
-        filter_size =[64, 64, 64, 64, 64]
-        fc_size = 1024
+        filter_size =[32, 64, 64, 128]
+        fc_size = 2048
 
 
         # tf Graph input
@@ -77,7 +76,6 @@ class CNN(object):
         self.wc2 = tf.Variable(tf.random_normal([5, 5, filter_size[0], filter_size[1]]), name='wc2') # 5x5 conv, 32 inputs, 64 outputs
         self.wc3 = tf.Variable(tf.random_normal([5, 5, filter_size[1], filter_size[2]]), name='wc3') # 5x5 conv, 32 inputs, 64 outputs
         self.wc4 = tf.Variable(tf.random_normal([5, 5, filter_size[2], filter_size[3]]), name='wc4')  # 5x5 conv, 32 inputs, 64 outputs
-        self.wc5 = tf.Variable(tf.random_normal([5, 5, filter_size[3], filter_size[4]]), name='wc5')  # 5x5 conv, 32 inputs, 64 outputs
 
 
         self.wd1 = tf.Variable(tf.random_normal([8*8*filter_size[-1], fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
@@ -86,12 +84,10 @@ class CNN(object):
         if self.model_type == 'regression':
             self.regout = tf.Variable(tf.random_normal([self.n_classes, 1]), name='regout')
 
-
         self.bc1 = tf.Variable(tf.random_normal([filter_size[0]]), name='bc1')
         self.bc2 = tf.Variable(tf.random_normal([filter_size[1]]), name='bc2')
         self.bc3 = tf.Variable(tf.random_normal([filter_size[2]]), name='bc3')
         self.bc4 = tf.Variable(tf.random_normal([filter_size[3]]), name='bc4')
-        self.bc5 = tf.Variable(tf.random_normal([filter_size[4]]), name='bc5')
 
         self.bd1 = tf.Variable(tf.random_normal([fc_size]), name='bd1')
         self.bout = tf.Variable(tf.random_normal([self.n_classes]), name='bout')
@@ -180,14 +176,15 @@ class CNN(object):
         print "Optimization Finished!"
 
 
-    def inference(self, x):
+    def inference(self, x, file_name):
         y = np.zeros(shape=[x.shape[0], 1])
 
         # Define Saver
         self.saver = tf.train.Saver()
-
-        if self.load() is True:
-            print(" [*] Load SUCCESS")
+        tf.initialize_all_variables().run()
+        if self.load(file_name) is True:
+            # print(" [*] Load SUCCESS")
+            pass
         else:
             print(" [!] Load failed...")
 
@@ -233,12 +230,12 @@ class CNN(object):
         self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 
 
-    def load(self):
+    def load(self, file_name):
         """ """
-        print(" [*] Reading checkpoints...")
+        # print(" [*] Reading checkpoints...")
 
         checkpoint_dir = os.path.join(os.path.dirname(__file__), 'assets')
-        model_name = 'cnn_reg_1.model'
+        model_name = file_name
         try:
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, model_name))
             return True
@@ -249,9 +246,9 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.00005
+    learning_rate = 0.0001
     training_iters = 100
-    batch_size = 128
+    batch_size = 64
     display_step = 50
 
     # Network Parameters

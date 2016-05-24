@@ -52,16 +52,18 @@ class DataLoader(object):
             for episode_id in range((self.file_idx-1)*5000 +1,
                                     min(self.file_idx*5000+1, self.episode_size)):
                 if self.preload_kibo is None:
-                    self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(episode_id)
-                    self.preload_reward = np.array([self.preload_reward[0]]*self.preload_reward.shape[0])
+                    self.preload_kibo, self.preload_pos, self.preload_reward, color = self.get_kibo_pos_value(episode_id)
+                    # self.preload_reward = np.array([self.preload_reward[0]]*self.preload_reward.shape[0])
+                    self.preload_kibo =  self.preload_kibo * color.reshape((color.shape[0], 1, 1))
                 else:
-                    kibo, pos, reward = self.get_kibo_pos_value(episode_id)
+                    kibo, pos, reward, color = self.get_kibo_pos_value(episode_id)
                     if episode_id % 50 == 0:
                         print "episodo id : ", str(episode_id), "/", str(self.episode_size)
                     try:
+                        kibo = kibo * color.reshape((color.shape[0], 1, 1))
                         self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
                         self.preload_pos = np.concatenate((self.preload_pos, pos))
-                        self.preload_reward = np.concatenate((self.preload_reward, np.array([reward[0]] * reward.shape[0])))
+                        self.preload_reward = np.concatenate((self.preload_reward, reward))
                     except Exception as e:
                         print e
                         print reward
@@ -71,7 +73,6 @@ class DataLoader(object):
 #            self.current_episode_id += self.preload_episode_size
 #            if self.current_episode_id >=self.episode_size:
 #                self.current_episode_id = 0
-
 
                 assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
                 if (episode_id != 0 and episode_id % 5000 == 0) or (episode_id ==(self.episode_size-1)):
@@ -117,6 +118,8 @@ class DataLoader(object):
             pos.append(cal)
         return np.array(pos)
 
+    def get_color(self, epi_num):
+        return self.episodes[epi_num]['color'].as_matrix()[:-1]
 
     def make_kibo_panel(self, epi_num):
         epi = self.episodes[epi_num]
@@ -142,7 +145,7 @@ class DataLoader(object):
 
 
     def get_kibo_pos_value(self, epi_num):
-        return self.make_kibo_panel(epi_num), self.make_pos_table(epi_num), self.make_reward_table(epi_num)
+        return self.make_kibo_panel(epi_num), self.make_pos_table(epi_num), self.make_reward_table(epi_num), self.get_color(epi_num)
 
 if __name__ == '__main__':
     data_loader = DataLoader(model_type="classification", file_idx=1)
