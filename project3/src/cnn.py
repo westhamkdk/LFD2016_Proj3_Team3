@@ -160,7 +160,7 @@ class CNN(object):
 
             if epoch_over is True:
                 epoch +=1
-                self.save(epoch)
+                self.save_reg(epoch)
 
         print "Optimization Finished!"
 
@@ -207,6 +207,17 @@ class CNN(object):
 
         self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 
+    def save_reg(self, step):
+        """ """
+        model_name = 'cnn_reg_%s.model' % self.model_type
+        checkpoint_dir = os.path.join(os.path.dirname(__file__), 'assets')
+
+        if not os.path.exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+
+        self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
+
+
     def load(self):
         """ """
         print(" [*] Reading checkpoints...")
@@ -224,7 +235,7 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.002
+    learning_rate = 0.005
     training_iters = 100
     batch_size = 128
     display_step = 50
