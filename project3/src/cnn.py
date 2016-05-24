@@ -45,11 +45,12 @@ class CNN(object):
         self.conv3 = self.conv2d(self.conv2, self.wc3, self.bc3)
         self.conv4 = self.conv2d(self.conv3, self.wc4, self.bc4)
         self.conv5 = self.conv2d(self.conv4, self.wc5, self.bc5)
-        self.conv5 = self.max_pool(self.conv5, k=2)
+        self.conv6 = self.conv2d(self.conv5, self.wc6, self.bc6)
+        self.conv6 = self.max_pool(self.conv6, k=2)
 
 
         # Fully connected layer
-        self.dense1 = tf.reshape(self.conv5, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
+        self.dense1 = tf.reshape(self.conv6, [-1, self.wd1.get_shape().as_list()[0]]) # Reshape conv2 output to fit dense layer input
         self.dense1 = tf.nn.tanh(tf.add(tf.matmul(self.dense1, self.wd1), self.bd1)) # Relu activation
 
         # Output, class prediction
@@ -61,7 +62,7 @@ class CNN(object):
         return out
 
     def build_graph(self):
-        filter_size =[32, 64, 64, 64, 64]
+        filter_size =[64, 64, 64, 128, 128, 128]
         fc_size = 1024
 
 
@@ -80,8 +81,10 @@ class CNN(object):
                                name='wc4')  # 5x5 conv, 32 inputs, 64 outputs
         self.wc5 = tf.Variable(tf.random_normal([5, 5, filter_size[3], filter_size[4]]),
                                name='wc5')  # 5x5 conv, 32 inputs, 64 outputs
+        self.wc6 = tf.Variable(tf.random_normal([5, 5, filter_size[4], filter_size[5]]),
+                               name='wc6')  # 5x5 conv, 32 inputs, 64 outputs
 
-        self.wd1 = tf.Variable(tf.random_normal([15*15*filter_size[-1]/4, fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
+        self.wd1 = tf.Variable(tf.random_normal([8*8*filter_size[-1], fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
         self.out = tf.Variable(tf.random_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
 
         if self.model_type == 'regression':
@@ -93,6 +96,7 @@ class CNN(object):
         self.bc3 = tf.Variable(tf.random_normal([filter_size[2]]), name='bc3')
         self.bc4 = tf.Variable(tf.random_normal([filter_size[3]]), name='bc4')
         self.bc5 = tf.Variable(tf.random_normal([filter_size[4]]), name='bc5')
+        self.bc6 = tf.Variable(tf.random_normal([filter_size[5]]), name='bc6')
 
         self.bd1 = tf.Variable(tf.random_normal([fc_size]), name='bd1')
         self.bout = tf.Variable(tf.random_normal([self.n_classes]), name='bout')
@@ -251,7 +255,7 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.0015
+    learning_rate = 0.01
     training_iters = 100
     batch_size = 128
     display_step = 50
