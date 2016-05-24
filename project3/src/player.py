@@ -1,3 +1,4 @@
+from cnn import CNN
 from pybrain.rl.environments.twoplayergames.gomokuplayers.gomokuplayer import GomokuPlayer
 from random import choice
 import numpy as np
@@ -33,7 +34,7 @@ class n_Q_gomoku_player(GomokuPlayer):
             raise Exception("self.color is either 1 or -1, current color is %d"%self.color)
 
         panel = self.change_kibo_simple(state)
-        possible_move = self.get_available_counts(panel, self.color)
+        possible_move, possible_pos = self.get_available_counts(panel, self.color)
 
         print "---------------"
         print self.color
@@ -43,16 +44,28 @@ class n_Q_gomoku_player(GomokuPlayer):
         print state
         print panel
         print possible_move
+        print possible_pos
 
+        ## if there is a rule then change possible_move
+        # e.g. possible_move = by_sum_rule(possible_move)
+        # or directly change 'get_available_counts' funtion
 
-
-
-        # action = self.module.getMaxAction()
-
-        action = (0,0)
+        # values = self.get_values(possible_move)
+        # print values.shape
+        # if self.color == 1:
+        #     highest_value_idx = np.argmax(values)
+        #     best_pos = possible_pos[highest_value_idx]
+        # elif self.color == -1:
+        #     lowest_value_idx = np.argmin(values)
+        #     best_pos = possible_pos[lowest_value_idx]
+        #
+        # action = self._convertIndexToPos(best_pos)
+        action = (0, 0)
         if self.game.isLegal(self.color, action):
+            print "legal move"
             return [self.color, action]
         else:
+            print "ilegal move"
             return [self.color, choice(self.game.getLegals(self.color))]
 
 
@@ -103,3 +116,16 @@ class n_Q_gomoku_player(GomokuPlayer):
                     pos.append(i*15 + j)
         return np.array(full_mat), np.array(pos)
 
+    def get_values(self, possible_move):
+        # Parameters
+        learning_rate = 0.00005
+        training_iters = 100
+        batch_size = 128
+        display_step = 50
+        n_input = 15 * 15  # MNIST data input (img shape: 28*28)
+        n_classes = 225  # MNIST total classes (0-9 digits)
+        model_type = "regression"
+        with tf.Session() as sess:
+            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
+                      model_type=model_type)
+            return cnn.inference(possible_move)

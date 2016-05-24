@@ -277,7 +277,8 @@ if __name__ == '__main__':
             else:
                 cnn.calculate_error()
     else:
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+       with tf.Session() as sess:
+        # with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
                       model_type=model_type)
 
