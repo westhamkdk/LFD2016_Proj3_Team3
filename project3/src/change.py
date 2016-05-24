@@ -47,14 +47,14 @@ class DataLoader(object):
             print e
             self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
 
-            for eposide_id in range(self.current_episode_id,
+            for episode_id in range(self.current_episode_id,
                                     min(self.current_episode_id + self.preload_episode_size, self.episode_size)):
                 if self.preload_kibo is None:
-                    self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(eposide_id)
+                    self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(episode_id)
                 else:
-                    kibo, pos, reward = self.get_kibo_pos_value(eposide_id)
-                    if eposide_id % 50 == 0:
-                        print "episodo id : ", str(eposide_id), "/", str(self.episode_size)
+                    kibo, pos, reward = self.get_kibo_pos_value(episode_id)
+                    if episode_id % 50 == 0:
+                        print "episodo id : ", str(episode_id), "/", str(self.episode_size)
                     try:
                         self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
                         self.preload_pos = np.concatenate((self.preload_pos, pos))
@@ -64,27 +64,27 @@ class DataLoader(object):
                         print self.preload_kibo
                         print kibo
 
-            self.current_episode_id += self.preload_episode_size
-            if self.current_episode_id >=self.episode_size:
-                self.current_episode_id = 0
+#            self.current_episode_id += self.preload_episode_size
+#            if self.current_episode_id >=self.episode_size:
+#                self.current_episode_id = 0
 
-            self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
-            temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
-            temp_pos[:, self.preload_pos] = 1
-            self.preload_pos = temp_pos
-            self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
+                self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
+                temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
+                temp_pos[:, self.preload_pos] = 1
+                self.preload_pos = temp_pos
+                self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
 
-            assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
-            if (episode_id != 0 and episode_id % 10000 == 0) or (episode_id ==(self.episode_size-1)):
-                print "saving..."
-                idx = episode_id // 10000
-                if episode_id == (self.episode_size-1):
-                    idx += 1
-                np.save('../data/kibo_%d' %idx, self.preload_kibo)
-                np.save('../data/pos_%d' %idx, self.preload_pos)
-                np.save('../data/reward_%d' %idx, self.preload_reward)
-                self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
-                print "saving complete"
+                assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
+                if (episode_id != 0 and episode_id % 5000 == 0) or (episode_id ==(self.episode_size-1)):
+                    print "saving..."
+                    idx = episode_id // 5000
+                    if episode_id == (self.episode_size-1):
+                        idx += 1
+                    np.save('../data/kibo_%d' %idx, self.preload_kibo)
+                    np.save('../data/pos_%d' %idx, self.preload_pos)
+                    np.save('../data/reward_%d' %idx, self.preload_reward)
+                    self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
+                    print "saving complete"
 
     def generate_batch(self, batch_size):
         epoch_over = False
