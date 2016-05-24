@@ -85,8 +85,8 @@ class DataLoader(object):
                     idx = episode_id // 5000
                     if episode_id == (self.episode_size-1):
                         idx += 1
-                    # np.save('../data/kibo_%d' %idx, self.preload_kibo)
-                    # np.save('../data/pos_%d' %idx, self.preload_pos)
+                    np.save('../data/kibo_%d' %idx, self.preload_kibo)
+                    np.save('../data/pos_%d' %idx, self.preload_pos)
                     np.save('../data/reward_%d' %idx, self.preload_reward)
                     self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
                     print "saving complete"
