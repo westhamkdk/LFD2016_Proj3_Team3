@@ -20,7 +20,6 @@ class DataLoader(object):
         self.file_idx = 1
         self.preload_dataset()
         self.model_type = model_type
-        print self.episode_size
 
     def load_episodes(self):
         file_path = '../data/renjunet_v10_20160425.rif'
@@ -30,7 +29,6 @@ class DataLoader(object):
                 print "pickle loaded"
                 self.episodes = cPickle.load(handle)
                 print "pickle loading complete"
-                print np.sum(self.episodes, axis=0)
         except Exception as e:
             print e
             print "failed to load episodes"
