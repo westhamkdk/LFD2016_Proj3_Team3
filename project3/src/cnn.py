@@ -177,7 +177,7 @@ class CNN(object):
 
 
     def inference(self, x, file_name):
-        y = np.zeros(shape=[x.shape[0], 1])
+        y = np.zeros(shape=[x.shape[0], 225])
 
         # Define Saver
         self.saver = tf.train.Saver()

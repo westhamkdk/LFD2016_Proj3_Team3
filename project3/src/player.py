@@ -134,4 +134,5 @@ class n_Q_gomoku_player(GomokuPlayer):
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
                       model_type=model_type)
             values = cnn.inference(possible_move_reshape, 'cnn_reg_regression.model-3')
-            return  np.squeeze(values)
+            print values
+            # return  np.squeeze(values)
