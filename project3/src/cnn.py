@@ -72,28 +72,28 @@ class CNN(object):
             self.y = tf.placeholder(tf.float32, [None, self.n_classes])
 
         # Store layers weight & bias
-        self.wc1 = tf.Variable(tf.random_normal([5, 5, 1, filter_size[0]]), name='wc1') # 5x5 conv, 1 input, 32 outputs
-        self.wc2 = tf.Variable(tf.random_normal([5, 5, filter_size[0], filter_size[1]]), name='wc2') # 5x5 conv, 32 inputs, 64 outputs
-        self.wc3 = tf.Variable(tf.random_normal([5, 5, filter_size[1], filter_size[2]]), name='wc3') # 5x5 conv, 32 inputs, 64 outputs
-        self.wc4 = tf.Variable(tf.random_normal([5, 5, filter_size[2], filter_size[3]]), name='wc4')  # 5x5 conv, 32 inputs, 64 outputs
+        self.wc1 = tf.Variable(tf.truncated_normal([5, 5, 1, filter_size[0]]), name='wc1') # 5x5 conv, 1 input, 32 outputs
+        self.wc2 = tf.Variable(tf.truncated_normal([5, 5, filter_size[0], filter_size[1]]), name='wc2') # 5x5 conv, 32 inputs, 64 outputs
+        self.wc3 = tf.Variable(tf.truncated_normal([5, 5, filter_size[1], filter_size[2]]), name='wc3') # 5x5 conv, 32 inputs, 64 outputs
+        self.wc4 = tf.Variable(tf.truncated_normal([5, 5, filter_size[2], filter_size[3]]), name='wc4')  # 5x5 conv, 32 inputs, 64 outputs
 
 
-        self.wd1 = tf.Variable(tf.random_normal([8*8*filter_size[-1], fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
-        self.out = tf.Variable(tf.random_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
+        self.wd1 = tf.Variable(tf.truncated_normal([8*8*filter_size[-1], fc_size]), name='wd1') # fully connected, 7*7*64 inputs, 1024 outputs
+        self.out = tf.Variable(tf.truncated_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
 
         if self.model_type == 'regression':
-            self.regout = tf.Variable(tf.random_normal([self.n_classes, 1]), name='regout')
+            self.regout = tf.Variable(tf.truncated_normal([self.n_classes, 1]), name='regout')
 
-        self.bc1 = tf.Variable(tf.random_normal([filter_size[0]]), name='bc1')
-        self.bc2 = tf.Variable(tf.random_normal([filter_size[1]]), name='bc2')
-        self.bc3 = tf.Variable(tf.random_normal([filter_size[2]]), name='bc3')
-        self.bc4 = tf.Variable(tf.random_normal([filter_size[3]]), name='bc4')
+        self.bc1 = tf.Variable(tf.constant(0.1, shape =[filter_size[0]]), name='bc1')
+        self.bc2 = tf.Variable(tf.constant(0.1, shape =[filter_size[1]]), name='bc2')
+        self.bc3 = tf.Variable(tf.constant(0.1, shape =[filter_size[2]]), name='bc3')
+        self.bc4 = tf.Variable(tf.constant(0.1, shape =[filter_size[3]]), name='bc4')
 
-        self.bd1 = tf.Variable(tf.random_normal([fc_size]), name='bd1')
-        self.bout = tf.Variable(tf.random_normal([self.n_classes]), name='bout')
+        self.bd1 = tf.Variable(tf.constant(0.1, shape =[fc_size]), name='bd1')
+        self.bout = tf.Variable(tf.constant(0.1, shape =[self.n_classes]), name='bout')
 
         if self.model_type == "regression":
-            self.bregout = tf.Variable(tf.random_normal([1]), name='bregout')
+            self.bregout = tf.Variable(tf.constant(0.1, shape =[1]), name='bregout')
 
         # Construct model
         self.pred = self.conv_net()
@@ -177,7 +177,7 @@ class CNN(object):
 
 
     def inference(self, x, file_name):
-        y = np.zeros(shape=[x.shape[0], 1])
+        y = np.zeros(shape=[x.shape[0], 225])
 
         # Define Saver
         self.saver = tf.train.Saver()
@@ -221,7 +221,7 @@ class CNN(object):
 
     def save_reg(self, step):
         """ """
-        model_name = 'cnn_reg_%s.model' % self.model_type
+        model_name = 'cnn_%s.model' % self.model_type
         checkpoint_dir = os.path.join(os.path.dirname(__file__), 'assets')
 
         if not os.path.exists(checkpoint_dir):
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     # Parameters
     learning_rate = 0.0001
     training_iters = 100
-    batch_size = 64
+    batch_size = 128
     display_step = 50
 
     # Network Parameters
@@ -256,14 +256,14 @@ if __name__ == '__main__':
     n_classes = 225 # MNIST total classes (0-9 digits)
 
     is_train = True
-#    model_type = "classification"
-    model_type = "regression"
+    model_type = "classification"
+#    model_type = "regression"
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
 
     if model_type =="classification":
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-            #        with tf.Session() as sess:
+        # with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        with tf.Session() as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes, model_type=model_type)
 
             if is_train is True:

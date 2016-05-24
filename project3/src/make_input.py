@@ -54,13 +54,13 @@ class DataLoader(object):
                 if self.preload_kibo is None:
                     self.preload_kibo, self.preload_pos, self.preload_reward, color = self.get_kibo_pos_value(episode_id)
                     # self.preload_reward = np.array([self.preload_reward[0]]*self.preload_reward.shape[0])
-                    self.preload_kibo =  self.preload_kibo * color.reshape((color.shape[0], 1, 1))
+                    self.preload_kibo =  self.preload_kibo * -(color.reshape((color.shape[0], 1, 1)))
                 else:
                     kibo, pos, reward, color = self.get_kibo_pos_value(episode_id)
                     if episode_id % 50 == 0:
                         print "episodo id : ", str(episode_id), "/", str(self.episode_size)
                     try:
-                        kibo = kibo * color.reshape((color.shape[0], 1, 1))
+                        kibo = kibo * -(color.reshape((color.shape[0], 1, 1)))
                         self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
                         self.preload_pos = np.concatenate((self.preload_pos, pos))
                         self.preload_reward = np.concatenate((self.preload_reward, reward))
@@ -78,7 +78,7 @@ class DataLoader(object):
                 if (episode_id != 0 and episode_id % 5000 == 0) or (episode_id ==(self.episode_size-1)):
                     self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
                     temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
-                    temp_pos[:, self.preload_pos] = 1
+                    temp_pos[np.arange(temp_pos.shape[0]), self.preload_pos] = 1
                     self.preload_pos = temp_pos
                     self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
 
