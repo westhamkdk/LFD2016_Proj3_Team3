@@ -84,16 +84,16 @@ class CNN(object):
         if self.model_type == 'regression':
             self.regout = tf.Variable(tf.truncated_normal([self.n_classes, 1]), name='regout')
 
-        self.bc1 = tf.Variable(tf.constant(0.1, [filter_size[0]]), name='bc1')
-        self.bc2 = tf.Variable(tf.constant(0.1, [filter_size[1]]), name='bc2')
-        self.bc3 = tf.Variable(tf.constant(0.1, [filter_size[2]]), name='bc3')
-        self.bc4 = tf.Variable(tf.constant(0.1, [filter_size[3]]), name='bc4')
+        self.bc1 = tf.Variable(tf.constant(0.1, shape =[filter_size[0]]), name='bc1')
+        self.bc2 = tf.Variable(tf.constant(0.1, shape =[filter_size[1]]), name='bc2')
+        self.bc3 = tf.Variable(tf.constant(0.1, shape =[filter_size[2]]), name='bc3')
+        self.bc4 = tf.Variable(tf.constant(0.1, shape =[filter_size[3]]), name='bc4')
 
-        self.bd1 = tf.Variable(tf.constant([0.1, fc_size]), name='bd1')
-        self.bout = tf.Variable(tf.constant(0.1, [self.n_classes]), name='bout')
+        self.bd1 = tf.Variable(tf.constant(0.1, shape =[fc_size]), name='bd1')
+        self.bout = tf.Variable(tf.constant(0.1, shape =[self.n_classes]), name='bout')
 
         if self.model_type == "regression":
-            self.bregout = tf.Variable(tf.constant(0.1, [1]), name='bregout')
+            self.bregout = tf.Variable(tf.constant(0.1, shape =[1]), name='bregout')
 
         # Construct model
         self.pred = self.conv_net()
