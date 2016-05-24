@@ -221,7 +221,7 @@ class CNN(object):
 
     def save_reg(self, step):
         """ """
-        model_name = 'cnn_reg_%s.model' % self.model_type
+        model_name = 'cnn_%s.model' % self.model_type
         checkpoint_dir = os.path.join(os.path.dirname(__file__), 'assets')
 
         if not os.path.exists(checkpoint_dir):

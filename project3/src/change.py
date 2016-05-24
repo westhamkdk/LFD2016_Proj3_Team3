@@ -18,8 +18,8 @@ class DataLoader(object):
         self.current_episode_id = 0
         self.data_idx = 0
         self.file_idx = 1
-        self.preload_dataset()
         self.model_type = model_type
+        self.preload_dataset()
 
     def load_episodes(self):
         file_path = '../data/renjunet_v10_20160425.rif'
@@ -41,7 +41,9 @@ class DataLoader(object):
     def preload_dataset(self):
         if self.file_idx <= 9:
             self.preload_kibo = np.load('../data/kibo_%d.npy' %self.file_idx)
-            self.preload_kibo = -self.preload_kibo
+            if self.model_type == 'regression':
+                self.preload_kibo = -self.preload_kibo
+
             self.preload_pos = np.load('../data/pos_%d.npy' %self.file_idx)
             self.preload_reward = np.load('../data/reward_%d.npy' %self.file_idx)
 
