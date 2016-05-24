@@ -17,6 +17,7 @@ class DataLoader(object):
         self.preload_episode_size = self.episode_size 
         self.current_episode_id = 0
         self.data_idx = 0
+        self.file_idx = 1
         self.preload_dataset()
         self.model_type = model_type
         print self.episode_size
@@ -39,53 +40,27 @@ class DataLoader(object):
         print time.time() - st
 
     def preload_dataset(self):
-        try:
-            self.preload_kibo = np.load('../data/kibo.npy')
-            self.preload_pos = np.load('../data/pos.npy')
-            self.preload_reward = np.load('../data/reward.npy')
-        except Exception as e:
-            print e
-            self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
+        if self.file_idx <= 9:
+            self.preload_kibo = np.load('../data/kibo_%d.npy' %self.file_idx)
+            self.preload_pos = np.load('../data/pos_%d.npy' %self.file_idx)
+            self.preload_reward = np.load('../data/reward_%d.npy' %self.file_idx)
 
-            for episode_id in range(self.current_episode_id,
-                                    min(self.current_episode_id + self.preload_episode_size, self.episode_size)):
-                if self.preload_kibo is None:
-                    self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(episode_id)
-                else:
-                    kibo, pos, reward = self.get_kibo_pos_value(episode_id)
-                    if episode_id % 50 == 0:
-                        print "episodo id : ", str(episode_id), "/", str(self.episode_size)
-                    try:
-                        self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
-                        self.preload_pos = np.concatenate((self.preload_pos, pos))
-                        self.preload_reward = np.concatenate((self.preload_reward, reward))
-                    except Exception as e:
-                        print e
-                        print self.preload_kibo
-                        print kibo
+            if self.file_idx == 1:
+                self.full_kibo = self.preload_kibo
+                self.full_pos = self.preload_pos
+                self.full_reward = self.preload_reward
+            else:
+                self.full_kibo = np.concatenate((self.full_kibo, self.preload_kibo))
+                self.full_pos = np.concatenate((self.full_pos, self.preload_pos))
+                self.full_reward = np.concatenate((self.full_reward, self.preload_reward))
 
-#            self.current_episode_id += self.preload_episode_size
-#            if self.current_episode_id >=self.episode_size:
-#                self.current_episode_id = 0
+            self.file_idx += 1
 
+        else:
+            self.preload_kibo = self.full_kibo
+            self.preload_pos = self.full_pos
+            self.preload_reward = self.full_reward
 
-                assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
-                if (episode_id != 0 and episode_id % 5000 == 0) or (episode_id ==(self.episode_size-1)):
-                    self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
-                    temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
-                    temp_pos[:, self.preload_pos] = 1
-                    self.preload_pos = temp_pos
-                    self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
-
-                    print "saving..."
-                    idx = episode_id // 5000
-                    if episode_id == (self.episode_size-1):
-                        idx += 1
-                    np.save('../data/kibo_%d' %idx, self.preload_kibo)
-                    np.save('../data/pos_%d' %idx, self.preload_pos)
-                    np.save('../data/reward_%d' %idx, self.preload_reward)
-                    self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
-                    print "saving complete"
 
     def generate_batch(self, batch_size):
         epoch_over = False
@@ -93,9 +68,11 @@ class DataLoader(object):
             self.preload_kibo[self.data_idx + batch_size]
         except IndexError as e:
             print "indexError"
+            self.preload_dataset()
             self.shuffle_data()
             self.data_idx = 0
-            epoch_over = True
+            if self.file_idx >=10:
+                epoch_over = True
 
         if self.model_type == "classification":
             batch_x = self.preload_kibo[self.data_idx:self.data_idx + batch_size]
