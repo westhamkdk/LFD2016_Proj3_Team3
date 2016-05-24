@@ -181,7 +181,7 @@ class CNN(object):
 
 
     def inference(self, x):
-        y = np.zeros(shape=[x.shape[0], self.n_classes])
+        y = np.zeros(shape=[x.shape[0], 1])
 
         # Define Saver
         self.saver = tf.train.Saver()
@@ -191,7 +191,7 @@ class CNN(object):
         else:
             print(" [!] Load failed...")
 
-        return self.sess.run(self.dense1, feed_dict={self.x: x, self.y: y, self.keep_prob: 1.})
+        return self.sess.run(self.pred, feed_dict={self.x: x, self.y: y})
 
     # def calculate_error(self):
     #     # Define Saver
@@ -238,14 +238,13 @@ class CNN(object):
         print(" [*] Reading checkpoints...")
 
         checkpoint_dir = os.path.join(os.path.dirname(__file__), 'assets')
-
-        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
-        if ckpt and ckpt.model_checkpoint_path:
-            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+        model_name = 'cnn_reg_1.model'
+        try:
+            self.saver.restore(self.sess, os.path.join(checkpoint_dir, model_name))
             return True
-        else:
+        except:
             return False
+
 
 if __name__ == '__main__':
     import time
