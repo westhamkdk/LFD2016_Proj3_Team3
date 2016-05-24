@@ -68,14 +68,15 @@ class DataLoader(object):
 #            if self.current_episode_id >=self.episode_size:
 #                self.current_episode_id = 0
 
-                self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
-                temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
-                temp_pos[:, self.preload_pos] = 1
-                self.preload_pos = temp_pos
-                self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
 
                 assert len(self.preload_kibo) == len(self.preload_pos) == len(self.preload_reward)
                 if (episode_id != 0 and episode_id % 5000 == 0) or (episode_id ==(self.episode_size-1)):
+                    self.preload_kibo = np.reshape(self.preload_kibo, (self.preload_kibo.shape[0], 15, 15, 1))
+                    temp_pos = np.zeros(shape=(self.preload_pos.shape[0], 225))
+                    temp_pos[:, self.preload_pos] = 1
+                    self.preload_pos = temp_pos
+                    self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
+
                     print "saving..."
                     idx = episode_id // 5000
                     if episode_id == (self.episode_size-1):
