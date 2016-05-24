@@ -246,7 +246,7 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.00001
+    learning_rate = 0.0001
     training_iters = 100
     batch_size = 64
     display_step = 50
