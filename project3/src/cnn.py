@@ -56,7 +56,7 @@ class CNN(object):
         out = tf.add(tf.matmul(self.dense1, self.out), self.bout)
 
         if self.model_type == "regression":
-            out = tf.add(tf.matmul(tf.nn.tanh(out), self.regout), self.bregout)
+            out = tf.add(tf.matmul(self.dense1, self.regout), self.bregout)
 
         return out
 
@@ -84,7 +84,7 @@ class CNN(object):
         self.out = tf.Variable(tf.random_normal([fc_size, self.n_classes]), name='out') # 1024 inputs, 10 outputs (class prediction)
 
         if self.model_type == 'regression':
-            self.regout = tf.Variable(tf.random_normal([self.n_classes, 1]), name='regout')
+            self.regout = tf.Variable(tf.random_normal([fc_size, 1]), name='regout')
 
 
         self.bc1 = tf.Variable(tf.random_normal([filter_size[0]]), name='bc1')
@@ -180,14 +180,15 @@ class CNN(object):
         print "Optimization Finished!"
 
 
-    def inference(self, x):
+    def inference(self, x, file_name):
         y = np.zeros(shape=[x.shape[0], 1])
 
         # Define Saver
         self.saver = tf.train.Saver()
-
-        if self.load() is True:
-            print(" [*] Load SUCCESS")
+        tf.initialize_all_variables().run()
+        if self.load(file_name) is True:
+            # print(" [*] Load SUCCESS")
+            pass
         else:
             print(" [!] Load failed...")
 
@@ -233,12 +234,12 @@ class CNN(object):
         self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 
 
-    def load(self):
+    def load(self, file_name):
         """ """
-        print(" [*] Reading checkpoints...")
+        # print(" [*] Reading checkpoints...")
 
         checkpoint_dir = os.path.join(os.path.dirname(__file__), 'assets')
-        model_name = 'cnn_reg_1.model'
+        model_name = file_name
         try:
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, model_name))
             return True
@@ -249,9 +250,9 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.00005
+    learning_rate = 0.00001
     training_iters = 100
-    batch_size = 128
+    batch_size = 64
     display_step = 50
 
     # Network Parameters

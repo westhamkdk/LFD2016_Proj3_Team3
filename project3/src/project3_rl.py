@@ -18,7 +18,7 @@ env = GomokuGame((15,15)) # env.b: state
 # # play gomoku game
 # # example
 # p1 = killing.KillingGomokuPlayer(env) # player 1
-# p2 = randomplayer.RandomGomokuPlayer(env, color=GomokuGame.WHITE) # player 2
+p2 = randomplayer.RandomGomokuPlayer(env, color=GomokuGame.WHITE) # player 2
 #
 # # play until the end
 # env.playToTheEnd(p1, p2)
@@ -38,7 +38,7 @@ env = GomokuGame((15,15)) # env.b: state
 
 # fight!
 p1 = n_Q_gomoku_player(None, env, GomokuGame.BLACK)
-p2 = n_Q_gomoku_player(None, env, GomokuGame.WHITE)
+# p2 = n_Q_gomoku_player(None, env, GomokuGame.WHITE)
 env.playToTheEnd(p1, p2)
 
 if env.winner == p1.color:
