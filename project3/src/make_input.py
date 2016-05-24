@@ -53,6 +53,7 @@ class DataLoader(object):
                                     min(self.file_idx*5000+1, self.episode_size)):
                 if self.preload_kibo is None:
                     self.preload_kibo, self.preload_pos, self.preload_reward = self.get_kibo_pos_value(episode_id)
+                    self.preload_reward = np.array([self.preload_reward[0]]*self.preload_reward.shape[0])
                 else:
                     kibo, pos, reward = self.get_kibo_pos_value(episode_id)
                     if episode_id % 50 == 0:
@@ -60,9 +61,10 @@ class DataLoader(object):
                     try:
                         self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
                         self.preload_pos = np.concatenate((self.preload_pos, pos))
-                        self.preload_reward = np.concatenate((self.preload_reward, reward))
+                        self.preload_reward = np.concatenate((self.preload_reward, np.array([reward[0]] * reward.shape[0])))
                     except Exception as e:
                         print e
+                        print reward
                         print self.preload_kibo
                         print kibo
 
@@ -83,8 +85,8 @@ class DataLoader(object):
                     idx = episode_id // 5000
                     if episode_id == (self.episode_size-1):
                         idx += 1
-                    np.save('../data/kibo_%d' %idx, self.preload_kibo)
-                    np.save('../data/pos_%d' %idx, self.preload_pos)
+                    # np.save('../data/kibo_%d' %idx, self.preload_kibo)
+                    # np.save('../data/pos_%d' %idx, self.preload_pos)
                     np.save('../data/reward_%d' %idx, self.preload_reward)
                     self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
                     print "saving complete"
@@ -143,4 +145,4 @@ class DataLoader(object):
         return self.make_kibo_panel(epi_num), self.make_pos_table(epi_num), self.make_reward_table(epi_num)
 
 if __name__ == '__main__':
-    data_loader = DataLoader(model_type="classification", file_idx=9)
+    data_loader = DataLoader(model_type="classification", file_idx=1)
