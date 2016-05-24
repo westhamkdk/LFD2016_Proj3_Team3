@@ -121,7 +121,7 @@ class CNN(object):
                 print "step : %d " % step
                 # Calculate batch accuracy and loss
                 acc, loss = self.sess.run([accuracy, self.cost], feed_dict={self.x: batch_xs, self.y: batch_ys})
-                print "Iter " + str(step*self.batch_size) + ", Minibatch Loss= " + "{:.6f}".format(loss) + ", Minibatch Accuracy= " + "{:.5f}".format(acc)
+                print "epoch :", str(epoch+1), ", Minibatch Loss= " + "{:.6f}".format(loss) + ", Minibatch Accuracy= " + "{:.5f}".format(acc)
             step += 1
             if epoch_over is True:
                 epoch +=1
@@ -138,7 +138,7 @@ class CNN(object):
 
         tf.initialize_all_variables().run()
         tf.train.Saver([self.wc1, self.wc2, self.wd1, self.out, self.bc1, self.bc2, self.bd1, self.bout]).restore(sess, \
-         save_path='assets/cnn_classification.model-7')
+         save_path='assets/cnn_classification.model-1')
         print "data is loading..."
         data_loader = DataLoader(self.model_type)
         print "data is loaded"
@@ -155,7 +155,7 @@ class CNN(object):
                 print "step : %d" % step
                 # Calculate batch accuracy and loss
                 loss = self.sess.run(self.cost, feed_dict={self.x: batch_xs, self.y: batch_ys})
-                print "Iter " + str(step * self.batch_size) + ", Minibatch Loss= " + "{:.6f}".format(loss)
+                print "epoch :" + str(epoch+1) + ", Minibatch Loss= " + "{:.6f}".format(loss)
             step += 1
 
             if epoch_over is True:
@@ -224,10 +224,10 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.001
-    training_iters = 50
+    learning_rate = 0.002
+    training_iters = 100
     batch_size = 128
-    display_step = 10
+    display_step = 50
 
     # Network Parameters
     n_input = 15*15 # MNIST data input (img shape: 28*28)
@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     is_train = True
     model_type = "classification"
-    # model_type = "regression"
+#    model_type = "regression"
 
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
