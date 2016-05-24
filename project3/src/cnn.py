@@ -248,7 +248,7 @@ if __name__ == '__main__':
     # Parameters
     learning_rate = 0.0001
     training_iters = 100
-    batch_size = 64
+    batch_size = 128
     display_step = 50
 
     # Network Parameters
