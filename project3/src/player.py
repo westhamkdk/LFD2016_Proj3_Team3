@@ -4,6 +4,7 @@ from random import choice
 import numpy as np
 import copy
 import tensorflow as tf
+import test
 
 class n_Q_gomoku_player(GomokuPlayer):
     """
@@ -87,19 +88,30 @@ class n_Q_gomoku_player(GomokuPlayer):
         return pannel
 
     def get_available_counts(self, current_panel):
-        full_mat = []
-        pos = []
+        # attack - finish
+        # defence - 4
+        # attack - checkmate
+        # defence - others
+        # if null or no entry
+        # attach code below
 
-        next_dol = 1
+        full_mat, pos = test.count_attack_defend(current_panel)
 
-        for i in range(0,15):
-            for j in range(0,15):
-                temp = copy.deepcopy(current_panel)
-                if temp[i][j] == 0:
-                    temp[i][j] = next_dol
-                    full_mat.append(temp)
-                    pos.append(i*15 + j)
-        return np.array(full_mat), np.array(pos)
+        # full_mat = []
+        # pos = []
+        #
+        # next_dol = 1
+        #
+        #
+        # for i in range(0,15):
+        #     for j in range(0,15):
+        #         temp = copy.deepcopy(current_panel)
+        #         if temp[i][j] == 0:
+        #             temp[i][j] = next_dol
+        #             full_mat.append(temp)
+        #             pos.append(i*15 + j)
+        # return np.array(full_mat), np.array(pos)
+        return full_mat, pos
 
     def get_values(self, possible_move):
         tf.reset_default_graph()

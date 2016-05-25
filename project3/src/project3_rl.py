@@ -15,12 +15,30 @@ MODULE_PATH = '../result/%d_module.pkl'
 # size = (15, 15), dataset is renju
 env = GomokuGame((15,15)) # env.b: state
 
-# # play gomoku game
-# # example
-# p1 = killing.KillingGomokuPlayer(env) # player 1
-# p2 = randomplayer.RandomGomokuPlayer(env, color=GomokuGame.WHITE) # player 2
+# play gomoku game
+# example
+p1 = killing.KillingGomokuPlayer(env) # player 1
+p2 = randomplayer.RandomGomokuPlayer(env, color=GomokuGame.WHITE) # player 2
+
+# play until the end
+env.playToTheEnd(p1, p2)
+
+if env.winner == p1.color:
+    print 'win player1!'
+elif env.winner == p2.color:
+    print 'win player2!'
+else:
+    print 'draw!'
+
+
+# # fight with own players
+# # load module
+# module1 = pickle.load(MODULE_PATH % 1)
+# module2 = pickle.load(MODULE_PATH % 2)
 #
-# # play until the end
+# # fight!
+# p1 = n_Q_gomoku_player(module1, env, GomokuGame.BLACK)
+# p2 = n_Q_gomoku_player(module2, env, GomokuGame.WHITE)
 # env.playToTheEnd(p1, p2)
 #
 # if env.winner == p1.color:
@@ -31,40 +49,7 @@ env = GomokuGame((15,15)) # env.b: state
 #     print 'draw!'
 
 
-# fight with own players
-# load module
-# module1 = pickle.load(MODULE_PATH % 1)
-# module2 = pickle.load(MODULE_PATH % 2)
 
-# fight!
-win = []
-lose = []
-draw = []
-soo2 = []
-for i in range(10):
-    p1 = n_Q_gomoku_player(None, env, GomokuGame.BLACK)
-    p2 = n_Q_gomoku_player(None, env, GomokuGame.WHITE)
-
-    # p2 = n_Q_gomoku_player(None, env, GomokuGame.BLACK)
-    # p2 = killing.KillingGomokuPlayer(env, color=GomokuGame.BLACK) # player 1
-
-    env.playToTheEnd(p1, p2)
-
-    if env.winner == p1.color:
-        win.append(1)
-        print 'win player1!'
-    elif env.winner == p2.color:
-        lose.append(1)
-        print 'win player2!'
-    else:
-        print 'draw!'
-        draw.append(1)
-    soo2.append(env.movesDone)
-
-    env.reset()
-
-print "win : ", sum(win), " / lose : ", sum(lose), " / draw : ", sum(draw)
-print "average pansoo : ", sum(soo2)/10.0
 ## for test, TA
 # score = defaultdict(int)
 # for i in team:
@@ -98,4 +83,3 @@ print "average pansoo : ", sum(soo2)/10.0
 #
 #             sun = -sun
 #             env.reset()
-
