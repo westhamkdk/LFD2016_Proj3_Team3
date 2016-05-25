@@ -39,9 +39,7 @@ class n_Q_gomoku_player(GomokuPlayer):
 
 
         _, possible_pos = self.get_available_counts(panel_colored)
-        # print possible_pos
         values = self.get_values(panel_colored_nd)
-        # print values
         possible_values = values[possible_pos]
         assert len(possible_values) == len(possible_pos)
         best_idx = np.argmax(possible_values)
