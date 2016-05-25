@@ -148,8 +148,8 @@ class CNN(object):
         self.saver = tf.train.Saver()
 
         tf.initialize_all_variables().run()
-        # tf.train.Saver([self.wc1, self.wc2, self.wc3, self.wd1, self.out, self.bc1, self.bc2, self.bc3, self.bd1, self.bout]).restore(sess, \
-        #  save_path='assets/cnn_classification.model-1')
+        tf.train.Saver([self.wc1, self.wc2, self.wc3, self.wc4, self.wd1, self.out, self.bc1, self.bc2, self.bc3, self.bc4, self.bd1, self.bout]).restore(sess, \
+         save_path='assets/cnn_classification.model-82')
         print "data is loading..."
         data_loader = DataLoader(self.model_type)
         print "data is loaded"
@@ -246,8 +246,8 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.0001
-    training_iters = 100
+    learning_rate = 0.00001
+    training_iters = 50
     batch_size = 128
     display_step = 50
 
@@ -256,8 +256,8 @@ if __name__ == '__main__':
     n_classes = 225 # MNIST total classes (0-9 digits)
 
     is_train = True
-    model_type = "classification"
-#    model_type = "regression"
+#    model_type = "classification"
+    model_type = "regression"
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
 
