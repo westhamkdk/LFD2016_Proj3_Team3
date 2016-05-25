@@ -40,12 +40,12 @@ class DataLoader(object):
 
     def preload_dataset(self):
         if self.file_idx <= 9:
-            self.preload_kibo = np.load('../data/kibo_%d.npy' %self.file_idx)
+            self.preload_kibo = np.load('../data/kibo_decay_%d.npy' %self.file_idx)
             if self.model_type == 'regression':
                 self.preload_kibo = -self.preload_kibo
 
-            self.preload_pos = np.load('../data/pos_%d.npy' %self.file_idx)
-            self.preload_reward = np.load('../data/reward_%d.npy' %self.file_idx)
+            self.preload_pos = np.load('../data/pos_decay_%d.npy' %self.file_idx)
+            self.preload_reward = np.load('../data/reward_decay_%d.npy' %self.file_idx)
 
             if self.file_idx == 1:
                 self.full_kibo = self.preload_kibo
