@@ -38,7 +38,11 @@ def rl_random_b():
 
         env.reset()
 
-    return str("win : ", sum(win), " / lose : ", sum(lose), " / draw : ", sum(draw), "average pansoo : ", sum(soo2)/10.0)
+    print "win : "+str(sum(win))
+    print "lose : "+str(sum(lose))
+    print "draw : "+str(sum(draw))
+    print "average pansoo : "+str(sum(soo2)/10.0)
+    # return str("win : ", sum(win), " / lose : ", sum(lose), " / draw : ", sum(draw), "average pansoo : ", sum(soo2)/10.0)
 
 
 def rl_random_w():
