@@ -61,7 +61,7 @@ class CNN(object):
 
     def build_graph(self):
         filter_size =[32, 64, 64, 128]
-        fc_size = 2048
+        fc_size = 1024
 
 
         # tf Graph input
