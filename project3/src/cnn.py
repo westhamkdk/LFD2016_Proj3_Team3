@@ -71,6 +71,9 @@ class CNN(object):
         else:
             self.y = tf.placeholder(tf.float32, [None, self.n_classes])
 
+        if self.model_type == "rein":
+            self.r = tf.placeholder(tf.float32, [None, 1])
+
         # Store layers weight & bias
         self.wc1 = tf.Variable(tf.truncated_normal([5, 5, 1, filter_size[0]]), name='wc1') # 5x5 conv, 1 input, 32 outputs
         self.wc2 = tf.Variable(tf.truncated_normal([5, 5, filter_size[0], filter_size[1]]), name='wc2') # 5x5 conv, 32 inputs, 64 outputs
@@ -101,9 +104,10 @@ class CNN(object):
         # Define loss and optimizer
         if self.model_type == "regression":
             self.cost = tf.reduce_mean(tf.pow(self.pred - self.y, 2))
-        else:
+        elif self.model_type == "classification":
             self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.pred, self.y))
-
+        elif self.model_type == "rein":
+            self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.pred, self.y) * self.r)
 
     def train_classification(self):
 
@@ -139,6 +143,47 @@ class CNN(object):
                 self.save(epoch)
 
         print "Optimization Finished!"
+
+    def train_rein(self):
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.cost)
+
+        # Evaluate model
+        correct_pred = tf.equal(tf.argmax(self.pred, 1), tf.argmax(self.y, 1))
+        accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+        # Define Saver
+        self.saver = tf.train.Saver()
+
+        tf.initialize_all_variables().run()
+        tf.train.Saver(
+            [self.wc1, self.wc2, self.wc3, self.wc4, self.wd1, self.out, self.bc1, self.bc2, self.bc3, self.bc4,
+             self.bd1, self.bout]).restore(sess, \
+                                           save_path='assets/cnn_classification.model-82')
+
+        print "data is loading..."
+        data_loader = DataLoader(self.model_type)
+        print "data is loaded"
+
+        epoch = 0
+        step = 1
+        # Keep training until reach max iterations
+        while epoch < self.training_iters:
+            batch_xs, batch_ys, batch_rs, epoch_over = data_loader.generate_batch(self.batch_size)
+
+            # Fit training using batch data
+            self.sess.run(self.optimizer, feed_dict={self.x: batch_xs, self.y: batch_ys, self.r: batch_rs})
+            if step % self.display_step == 0:
+                print "step : %d " % step
+                # Calculate batch accuracy and loss
+                acc, loss = self.sess.run([accuracy, self.cost], feed_dict={self.x: batch_xs, self.y: batch_ys, self.r: batch_rs})
+                print "epoch :", str(epoch + 1), ", Minibatch Loss= " + "{:.6f}".format(
+                    loss) + ", Minibatch Accuracy= " + "{:.5f}".format(acc)
+            step += 1
+            if epoch_over is True:
+                epoch += 1
+                self.save(epoch)
+
+        print "Optimization Finished!"
+
 
 
     def train_regression(self):
@@ -260,7 +305,7 @@ class CNN(object):
 if __name__ == '__main__':
     import time
     # Parameters
-    learning_rate = 0.00001
+    learning_rate = 0.000001
     training_iters = 50
     batch_size = 128
     display_step = 50
@@ -271,7 +316,8 @@ if __name__ == '__main__':
 
     is_train = True
 #    model_type = "classification"
-    model_type = "regression"
+#     model_type = "regression"
+    model_type = "rein"
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
 
@@ -287,7 +333,7 @@ if __name__ == '__main__':
                 print("--- %s min ---" % ((time.time() - start_time)/float(60)))
             else:
                 cnn.calculate_error()
-    else:
+    elif model_type == "regression":
        with tf.Session() as sess:
         # with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
@@ -296,6 +342,19 @@ if __name__ == '__main__':
             if is_train is True:
                 start_time = time.time()
                 cnn.train_regression()
+                print("--- %s seconds ---" % (time.time() - start_time))
+                print("--- %s min ---" % ((time.time() - start_time) / float(60)))
+            else:
+                cnn.calculate_error()
+    elif model_type == "rein":
+        with tf.Session() as sess:
+            # with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
+                      model_type=model_type)
+
+            if is_train is True:
+                start_time = time.time()
+                cnn.train_rein()
                 print("--- %s seconds ---" % (time.time() - start_time))
                 print("--- %s min ---" % ((time.time() - start_time) / float(60)))
             else:
