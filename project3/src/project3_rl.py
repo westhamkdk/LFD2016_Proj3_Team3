@@ -42,9 +42,10 @@ lose = []
 draw = []
 soo2 = []
 for i in range(10):
-    p1 = n_Q_gomoku_player(None, env, GomokuGame.WHITE, model_type="regression")
-    # p2 = n_Q_gomoku_player(None, env, GomokuGame.WHITE)
-    p2 = randomplayer.RandomGomokuPlayer(env, color=GomokuGame.BLACK) # player 2
+    p1 = n_Q_gomoku_player(None, env, GomokuGame.BLACK)
+    p2 = n_Q_gomoku_player(None, env, GomokuGame.WHITE)
+
+    # p2 = n_Q_gomoku_player(None, env, GomokuGame.BLACK)
     # p2 = killing.KillingGomokuPlayer(env, color=GomokuGame.BLACK) # player 1
 
     env.playToTheEnd(p1, p2)

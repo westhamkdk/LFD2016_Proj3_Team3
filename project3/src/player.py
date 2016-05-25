@@ -3,7 +3,6 @@ from pybrain.rl.environments.twoplayergames.gomokuplayers.gomokuplayer import Go
 from random import choice
 import numpy as np
 import copy
-import os
 import tensorflow as tf
 
 class n_Q_gomoku_player(GomokuPlayer):
@@ -11,12 +10,11 @@ class n_Q_gomoku_player(GomokuPlayer):
     change n to your team number
     """
 
-    def __init__(self, module, game, color, model_type, **args):
+    def __init__(self, module, game, color, **args):
         self.module = module
         self.game = game
         self.color = color
         self.setArgs(**args)
-        self.model_type = model_type
 
     def getAction(self):
         ## TODO
@@ -40,30 +38,17 @@ class n_Q_gomoku_player(GomokuPlayer):
         print panel_colored_nd
 
 
-        if self.model_type == "classification":
-            _, possible_pos = self.get_available_counts(panel_colored)
-            # print possible_pos
-            values = self.get_values(panel_colored_nd, self.model_type)
-            # print values
-            possible_values = values[possible_pos]
-            assert len(possible_values) == len(possible_pos)
-            best_idx = np.argmax(possible_values)
-            best_pos = possible_pos[best_idx]
-            action = self._convertIndexToPos(best_pos)
-
-        elif self.model_type == "regression":
-            possible_move, possible_pos = self.get_available_counts(panel_colored)
-
-            values = self.get_values(possible_move, self.model_type)
-            # print values
-            highest_value_idx = np.argmax(values)
-            best_pos = possible_pos[highest_value_idx]
-
-            action = self._convertIndexToPos(best_pos)
-            print action
+        _, possible_pos = self.get_available_counts(panel_colored)
+        # print possible_pos
+        values = self.get_values(panel_colored_nd)
+        # print values
+        possible_values = values[possible_pos]
+        assert len(possible_values) == len(possible_pos)
+        best_idx = np.argmax(possible_values)
+        best_pos = possible_pos[best_idx]
+        action = self._convertIndexToPos(best_pos)
 
         print "---------------"
-
 
         # action = (0, 0)
         if self.game.isLegal(self.color, action):
@@ -118,7 +103,7 @@ class n_Q_gomoku_player(GomokuPlayer):
                     pos.append(i*15 + j)
         return np.array(full_mat), np.array(pos)
 
-    def get_values(self, possible_move, model_type):
+    def get_values(self, possible_move):
         tf.reset_default_graph()
 
         possible_move_reshape = possible_move.reshape((-1, 15, 15, 1))
@@ -130,15 +115,8 @@ class n_Q_gomoku_player(GomokuPlayer):
         n_input = 15 * 15  # MNIST data input (img shape: 28*28)
         n_classes = 225  # MNIST total classes (0-9 digits)
 
-        if model_type == "classification":
-            with tf.Session() as sess:
-                cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
-                          model_type=model_type)
-                values = cnn.inference_classification(possible_move_reshape, 'cnn_classification.model-82')
-                return  np.squeeze(values)
-        elif model_type == "regression":
-            with tf.Session() as sess:
-                cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
-                          model_type=model_type)
-                values = cnn.inference_regression(possible_move_reshape, 'cnn_regression.model-6')
-                return  np.squeeze(values)
+        with tf.Session() as sess:
+            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes)
+            values = cnn.inference(possible_move_reshape, 'final_team3.model')
+            return  np.squeeze(values)
+
