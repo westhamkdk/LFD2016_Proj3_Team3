@@ -34,6 +34,8 @@ class DataLoader(object):
             print "failed to load episodes"
             self.episodes = utility.read_gomoku(file_path)
 
+            print self.episodes[1]
+
             with open('../data/episodes.p', 'wb') as handle:
                 cPickle.dump(self.episodes, handle)
         print time.time() - st
