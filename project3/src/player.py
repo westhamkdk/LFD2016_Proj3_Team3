@@ -3,7 +3,6 @@ from pybrain.rl.environments.twoplayergames.gomokuplayers.gomokuplayer import Go
 from random import choice
 import numpy as np
 import copy
-import os
 import tensorflow as tf
 
 class n_Q_gomoku_player(GomokuPlayer):
@@ -34,38 +33,22 @@ class n_Q_gomoku_player(GomokuPlayer):
             raise Exception("self.color is either 1 or -1, current color is %d"%self.color)
 
         panel = self.change_kibo_simple(state)
-        panel_colored = np.array(panel)*self.color
+        panel_colored_nd = (np.array(panel) * self.color)
+        panel_colored = panel_colored_nd.tolist()
+        print panel_colored_nd
 
 
-        # possible_move, possible_pos = self.get_available_counts(panel, self.color)
+        _, possible_pos = self.get_available_counts(panel_colored)
+        values = self.get_values(panel_colored_nd)
+        possible_values = values[possible_pos]
+        assert len(possible_values) == len(possible_pos)
+        best_idx = np.argmax(possible_values)
+        best_pos = possible_pos[best_idx]
+        action = self._convertIndexToPos(best_pos)
 
         print "---------------"
-        # print np.array(panel)
-        # print self.color
-        # print state.sum()
-        # print state[::2].sum()
-        # print state[1::2].sum()
-        # print state
-        # print panel
-        # print possible_move
-        # print possible_pos
 
-        ## if there is a rule then change possible_move
-        # e.g. possible_move = by_sum_rule(possible_move)
-        # or directly change 'get_available_counts' funtion
-
-        # values = self.get_values(possible_move)
-        #
-        # if self.color == 1:
-        #     highest_value_idx = np.argmax(values)
-        #     best_pos = possible_pos[highest_value_idx]
-        # elif self.color == -1:
-        #     lowest_value_idx = np.argmin(values)
-        #     best_pos = possible_pos[lowest_value_idx]
-        #
-        # action = self._convertIndexToPos(best_pos)
-        # print action
-        action = (0, 0)
+        # action = (0, 0)
         if self.game.isLegal(self.color, action):
             print "legal move"
             return [self.color, action]
@@ -103,14 +86,11 @@ class n_Q_gomoku_player(GomokuPlayer):
 
         return pannel
 
-    def get_available_counts(self, current_panel, color):
+    def get_available_counts(self, current_panel):
         full_mat = []
         pos = []
-        next_dol = 0
-        if color == 1:
-            next_dol = 1
-        elif color == -1:
-            next_dol = -1
+
+        next_dol = 1
 
         for i in range(0,15):
             for j in range(0,15):
@@ -132,10 +112,9 @@ class n_Q_gomoku_player(GomokuPlayer):
         display_step = 50
         n_input = 15 * 15  # MNIST data input (img shape: 28*28)
         n_classes = 225  # MNIST total classes (0-9 digits)
-        model_type = "regression"
+
         with tf.Session() as sess:
-            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes,
-                      model_type=model_type)
-            values = cnn.inference(possible_move_reshape, 'cnn_reg_regression.model-3')
-            print values
-            # return  np.squeeze(values)
+            cnn = CNN(sess, learning_rate, training_iters, batch_size, display_step, n_input, n_classes)
+            values = cnn.inference(possible_move_reshape, 'final_team3.model')
+            return  np.squeeze(values)
+

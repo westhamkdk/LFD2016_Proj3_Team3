@@ -42,21 +42,30 @@ class DataLoader(object):
 
     def preload_dataset(self):
         if self.file_idx <= 9:
-            self.preload_kibo = np.load('../data/kibo_%d.npy' %self.file_idx)
+            self.preload_kibo = np.load('../data/kibo_decay_%d.npy' %self.file_idx)
             if self.model_type == 'regression':
                 self.preload_kibo = -self.preload_kibo
 
-            self.preload_pos = np.load('../data/pos_%d.npy' %self.file_idx)
-            self.preload_reward = np.load('../data/reward_%d.npy' %self.file_idx)
+            self.preload_pos = np.load('../data/pos_decay_%d.npy' %self.file_idx)
+            self.preload_reward = np.load('../data/reward_decay_%d.npy' %self.file_idx)
+
+            if self.model_type == 'rein':
+                self.preload_rl_reward = np.load('../data/rl_reward_decay_%d.npy' %self.file_idx)
 
             if self.file_idx == 1:
                 self.full_kibo = self.preload_kibo
                 self.full_pos = self.preload_pos
                 self.full_reward = self.preload_reward
+
+                if self.model_type == 'rein':
+                    self.full_rl_reward = self.preload_rl_reward
             else:
                 self.full_kibo = np.concatenate((self.full_kibo, self.preload_kibo))
                 self.full_pos = np.concatenate((self.full_pos, self.preload_pos))
                 self.full_reward = np.concatenate((self.full_reward, self.preload_reward))
+
+                if self.model_type == 'rein':
+                    self.full_rl_reward = np.concatenate((self.full_rl_reward, self.preload_rl_reward))
 
             self.file_idx += 1
 
@@ -64,6 +73,8 @@ class DataLoader(object):
             self.preload_kibo = self.full_kibo
             self.preload_pos = self.full_pos
             self.preload_reward = self.full_reward
+            if self.model_type == "rein":
+                self.preload_rl_reward = self.full_rl_reward
 
 
     def generate_batch(self, batch_size):
@@ -81,13 +92,20 @@ class DataLoader(object):
         if self.model_type == "classification":
             batch_x = self.preload_kibo[self.data_idx:self.data_idx + batch_size]
             batch_y = self.preload_pos[self.data_idx:self.data_idx + batch_size]
-        else:
+        elif self.model_type == "regression":
             batch_x = self.preload_kibo[self.data_idx:self.data_idx + batch_size]
             batch_y = self.preload_reward[self.data_idx:self.data_idx + batch_size]
+        elif self.model_type == "rein":
+            batch_x = self.preload_kibo[self.data_idx:self.data_idx + batch_size]
+            batch_y = self.preload_pos[self.data_idx:self.data_idx + batch_size]
+            batch_r = self.preload_rl_reward[self.data_idx:self.data_idx + batch_size]
 
         self.data_idx += batch_size
 
-        return batch_x, batch_y, epoch_over
+        if self.model_type == "classification" or self.model_type == "regression":
+            return batch_x, batch_y, epoch_over
+        else:
+            return batch_x, batch_y, batch_r, epoch_over
 
     def shuffle_data(self):
         print "shuffle"
