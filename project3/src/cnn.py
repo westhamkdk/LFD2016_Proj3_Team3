@@ -176,8 +176,22 @@ class CNN(object):
         print "Optimization Finished!"
 
 
-    def inference(self, x, file_name):
+    def inference_classification(self, x, file_name):
         y = np.zeros(shape=[x.shape[0], 225])
+
+        # Define Saver
+        self.saver = tf.train.Saver()
+        tf.initialize_all_variables().run()
+        if self.load(file_name) is True:
+            # print(" [*] Load SUCCESS")
+            pass
+        else:
+            print(" [!] Load failed...")
+
+        return self.sess.run(self.pred, feed_dict={self.x: x, self.y: y})
+
+    def inference_regression(self, x, file_name):
+        y = np.zeros(shape=[x.shape[0], 1])
 
         # Define Saver
         self.saver = tf.train.Saver()
