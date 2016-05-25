@@ -47,7 +47,7 @@ class DataLoader(object):
             self.preload_reward = np.load('../data/reward.npy')
         except Exception as e:
             print e
-            self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
+            self.preload_kibo, self.preload_pos, self.preload_reward, self.preload_rl_reward = None, None, None, None
 
             for episode_id in range((self.file_idx-1)*5000 +1,
                                     min(self.file_idx*5000+1, self.episode_size)):
@@ -55,15 +55,34 @@ class DataLoader(object):
                     self.preload_kibo, self.preload_pos, self.preload_reward, color = self.get_kibo_pos_value(episode_id)
                     # self.preload_reward = np.array([self.preload_reward[0]]*self.preload_reward.shape[0])
                     self.preload_kibo =  self.preload_kibo * -(color.reshape((color.shape[0], 1, 1)))
+                    episode_size = self.preload_reward.shape[0]
+                    self.preload_rl_reward = np.append(self.preload_reward[1:], -self.preload_reward[-1])
+                    self.preload_rl_reward = np.array(
+                        [value * (0.9) ** ((episode_size - idx[0] - 1) // 2) for idx, value in
+                         np.ndenumerate(self.preload_rl_reward)])
+
+                    self.preload_reward = np.array([value*(0.9)**((episode_size-idx[0]-1)//2) for idx, value in np.ndenumerate(self.preload_reward)])
+
                 else:
                     kibo, pos, reward, color = self.get_kibo_pos_value(episode_id)
                     if episode_id % 50 == 0:
                         print "episodo id : ", str(episode_id), "/", str(self.episode_size)
                     try:
                         kibo = kibo * -(color.reshape((color.shape[0], 1, 1)))
+                        episode_size = reward.shape[0]
+                        rl_reward = np.append(reward[1:], -reward[-1])
+                        rl_reward = np.array(
+                        [value * (0.9) ** ((episode_size - idx[0] - 1) // 2) for idx, value in
+                         np.ndenumerate(rl_reward)])
+
+                        reward = np.array(
+                            [value * (0.9) ** ((episode_size - idx[0] - 1) // 2) for idx, value in
+                             np.ndenumerate(reward)])
+
                         self.preload_kibo = np.concatenate((self.preload_kibo, kibo))
                         self.preload_pos = np.concatenate((self.preload_pos, pos))
                         self.preload_reward = np.concatenate((self.preload_reward, reward))
+                        self.preload_rl_reward = np.concatenate((self.preload_rl_reward, rl_reward))
                     except Exception as e:
                         print e
                         print reward
@@ -81,15 +100,17 @@ class DataLoader(object):
                     temp_pos[np.arange(temp_pos.shape[0]), self.preload_pos] = 1
                     self.preload_pos = temp_pos
                     self.preload_reward = np.reshape(self.preload_reward, (self.preload_reward.shape[0], 1))
+                    self.preload_rl_reward = np.reshape(self.preload_rl_reward, (self.preload_rl_reward.shape[0], 1))
 
                     print "saving..."
                     idx = episode_id // 5000
                     if episode_id == (self.episode_size-1):
                         idx += 1
-                    np.save('../data/kibo_%d' %idx, self.preload_kibo)
-                    np.save('../data/pos_%d' %idx, self.preload_pos)
-                    np.save('../data/reward_%d' %idx, self.preload_reward)
-                    self.preload_kibo, self.preload_pos, self.preload_reward = None, None, None
+                    np.save('../data/kibo_decay_%d' %idx, self.preload_kibo)
+                    np.save('../data/pos_decay_%d' %idx, self.preload_pos)
+                    np.save('../data/reward_decay_%d' %idx, self.preload_reward)
+                    np.save('../data/rl_reward_decay_%d' % idx, self.preload_rl_reward)
+                    self.preload_kibo, self.preload_pos, self.preload_reward, self.preload_rl_reward = None, None, None, None
                     print "saving complete"
 
 
